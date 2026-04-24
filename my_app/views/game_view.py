@@ -21,3 +21,6 @@ def guess_view(request):
             return redirect('guess')
 
     return render(request, 'games/guess_game.html')
+
+def reaction_view(request):
+    return render(request, 'games/reaction_game.html')
