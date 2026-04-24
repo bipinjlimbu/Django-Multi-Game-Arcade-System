@@ -1,0 +1,113 @@
+<html>
+<head>
+    <title>Arcade | Number Guess</title>
+    {% load static %}
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <style>
+        body {
+            background-image: url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            margin: 0;
+        }
+        .game-card { background-color: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); border: 6px solid #f8fafc; }
+        .number-input { background-color: #f1f5f9; border: 4px solid transparent; transition: all 0.2s ease; }
+        .number-input:focus { background-color: #ffffff; border-color: #2563eb; outline: none; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen p-4 font-sans text-slate-900">
+
+    <div class="game-card w-full max-w-2xl rounded-[2.5rem] p-8 md:p-12 text-center">
+        <div class="flex justify-between items-center mb-8">
+            <a href="/games" class="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+                <i data-lucide="arrow-left" class="w-6 h-6 text-slate-400"></i>
+            </a>
+            <div class="inline-flex items-center gap-2 px-4 py-1 bg-blue-50 text-blue-600 rounded-full font-bold text-sm uppercase">
+                <i data-lucide="hash" class="w-4 h-4"></i> Number Guess
+            </div>
+            <div class="w-10"></div>
+        </div>
+
+        <div id="game-container">
+            <h1 class="text-4xl font-black mb-2">Guess the Secret</h1>
+            <p class="text-slate-500 mb-8 font-medium">Type a number (1-100) and press <span class="text-blue-600 font-bold">Enter</span></p>
+
+            <div id="feedback" class="mb-6 p-4 rounded-2xl bg-slate-50 text-slate-600 font-bold hidden"></div>
+
+            <div class="flex flex-col items-center gap-6">
+                <input type="number" id="guess-input" class="number-input w-32 h-32 text-5xl font-black text-center rounded-3xl" placeholder="?" autofocus>
+                <button id="reset-btn" onclick="resetGame()" class="hidden w-full max-w-xs py-4 bg-slate-900 text-white font-black text-xl rounded-2xl uppercase tracking-widest">Play Again</button>
+            </div>
+
+            <div class="mt-10 flex justify-center gap-12 border-t border-slate-100 pt-8">
+                <div class="text-center">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Attempts</p>
+                    <p id="attempt-count" class="text-2xl font-black text-slate-800">0</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Status</p>
+                    <p id="game-status" class="text-2xl font-black text-blue-600 uppercase">Playing</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/lucide.min.js' %}"></script>
+    <script>
+        lucide.createIcons();
+        let secretNum = Math.floor(Math.random() * 100) + 1;
+        let attempts = 0;
+        const input = document.getElementById('guess-input');
+
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkGuess(); });
+
+        function sendScore(finalScore) {
+            fetch('/guess/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ game_name: 'Number Guess', score: finalScore })
+            })
+            .then(res => res.json())
+            .then(data => console.log('Score Saved'))
+            .catch(err => console.error('Error:', err));
+        }
+
+        function checkGuess() {
+            const feedback = document.getElementById('feedback');
+            const attemptDisplay = document.getElementById('attempt-count');
+            const statusDisplay = document.getElementById('game-status');
+            const resetBtn = document.getElementById('reset-btn');
+            const guess = parseInt(input.value);
+
+            if (isNaN(guess) || guess < 1 || guess > 100) return;
+
+            attempts++;
+            attemptDisplay.innerText = attempts;
+            feedback.classList.remove('hidden');
+
+            if (guess === secretNum) {
+                feedback.innerText = `🎉 Correct! Attempts: ${attempts}`;
+                feedback.className = "mb-6 p-4 rounded-2xl bg-green-100 text-green-700 font-bold";
+                statusDisplay.innerText = "Winner";
+                statusDisplay.className = "text-2xl font-black text-green-600 uppercase";
+                input.classList.add('hidden');
+                resetBtn.classList.remove('hidden');
+                
+                sendScore(attempts); // Send to Django!
+            } else {
+                feedback.innerText = guess > secretNum ? "Too High! ↓" : "Too Low! ↑";
+                feedback.className = "mb-6 p-4 rounded-2xl bg-blue-50 text-blue-600 font-bold";
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        function resetGame() { location.reload(); }
+    </script>
+</body>
+</html>
