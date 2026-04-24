@@ -10,35 +10,63 @@
             background-position: center;
             margin: 0;
         }
-        .game-card { background-color: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); border: 6px solid #f8fafc; }
-        .number-input { background-color: #f1f5f9; border: 4px solid transparent; transition: all 0.2s ease; }
-        .number-input:focus { background-color: #ffffff; border-color: #2563eb; outline: none; }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .game-card { 
+            background-color: #ffffff; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); 
+            border: 6px solid #f8fafc; 
+        }
+        .number-input { 
+            background-color: #f1f5f9; 
+            border: 4px solid transparent; 
+            transition: all 0.2s ease; 
+        }
+        .number-input:focus { 
+            background-color: #ffffff; 
+            border-color: #2563eb; 
+            outline: none; 
+        }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
     </style>
 </head>
 
 <body class="flex items-center justify-center min-h-screen p-4 font-sans text-slate-900">
 
-    <div class="game-card w-full max-w-2xl rounded-[2.5rem] p-8 md:p-12 text-center">
+    <div class="game-card w-full max-w-2xl rounded-[2.5rem] p-8 md:p-12 text-center relative overflow-hidden">
+        
         <div class="flex justify-between items-center mb-8">
-            <a href="/games" class="p-2 hover:bg-slate-100 rounded-xl transition-colors">
-                <i data-lucide="arrow-left" class="w-6 h-6 text-slate-400"></i>
+            <a href="/games" class="p-3 hover:bg-slate-100 rounded-2xl transition-all group" title="Back to Games">
+                <i data-lucide="arrow-left" class="w-6 h-6 text-slate-400 group-hover:text-slate-600"></i>
             </a>
-            <div class="inline-flex items-center gap-2 px-4 py-1 bg-blue-50 text-blue-600 rounded-full font-bold text-sm uppercase">
-                <i data-lucide="hash" class="w-4 h-4"></i> Number Guess
+            
+            <div class="inline-flex items-center gap-2 px-4 py-1 bg-blue-50 text-blue-600 rounded-full font-bold text-sm uppercase tracking-wider">
+                <i data-lucide="hash" class="w-4 h-4"></i>
+                Number Guess
             </div>
-            <div class="w-10"></div>
+
+            <a href="/leaderboard/Guess Game" class="p-3 bg-yellow-50 hover:bg-yellow-100 rounded-2xl transition-all group" title="View Leaderboard">
+                <i data-lucide="trophy" class="w-6 h-6 text-yellow-600 group-hover:scale-110"></i>
+            </a>
         </div>
 
         <div id="game-container">
             <h1 class="text-4xl font-black mb-2">Guess the Secret</h1>
-            <p class="text-slate-500 mb-8 font-medium">Type a number (1-100) and press <span class="text-blue-600 font-bold">Enter</span></p>
+            <p class="text-slate-500 mb-8 font-medium">Type (1-100) and press <span class="text-blue-600 font-bold">Enter</span></p>
 
             <div id="feedback" class="mb-6 p-4 rounded-2xl bg-slate-50 text-slate-600 font-bold hidden"></div>
 
             <div class="flex flex-col items-center gap-6">
-                <input type="number" id="guess-input" class="number-input w-32 h-32 text-5xl font-black text-center rounded-3xl" placeholder="?" autofocus>
-                <button id="reset-btn" onclick="resetGame()" class="hidden w-full max-w-xs py-4 bg-slate-900 text-white font-black text-xl rounded-2xl uppercase tracking-widest">Play Again</button>
+                <input type="number" id="guess-input" 
+                    class="number-input w-32 h-32 text-5xl font-black text-center rounded-3xl"
+                    placeholder="?"
+                    autofocus>
+                
+                <button id="reset-btn" onclick="resetGame()" 
+                    class="hidden w-full max-w-xs py-4 bg-slate-900 text-white font-black text-xl rounded-2xl transition-all uppercase tracking-widest">
+                    Play Again
+                </button>
             </div>
 
             <div class="mt-10 flex justify-center gap-12 border-t border-slate-100 pt-8">
@@ -57,14 +85,17 @@
     <script src="{% static 'js/lucide.min.js' %}"></script>
     <script>
         lucide.createIcons();
+
         let secretNum = Math.floor(Math.random() * 100) + 1;
         let attempts = 0;
         const input = document.getElementById('guess-input');
 
-        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkGuess(); });
+        input.addEventListener('keypress', (e) => { 
+            if (e.key === 'Enter') checkGuess(); 
+        });
 
         function sendScore(finalScore) {
-            fetch('/guess/', {
+            fetch('/save-score/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -73,8 +104,8 @@
                 body: JSON.stringify({ game_name: 'Number Guess', score: finalScore })
             })
             .then(res => res.json())
-            .then(data => console.log('Score Saved'))
-            .catch(err => console.error('Error:', err));
+            .then(data => console.log('Score Saved Successfully'))
+            .catch(err => console.error('Error saving score:', err));
         }
 
         function checkGuess() {
@@ -98,7 +129,7 @@
                 input.classList.add('hidden');
                 resetBtn.classList.remove('hidden');
                 
-                sendScore(attempts); // Send to Django!
+                sendScore(attempts);
             } else {
                 feedback.innerText = guess > secretNum ? "Too High! ↓" : "Too Low! ↑";
                 feedback.className = "mb-6 p-4 rounded-2xl bg-blue-50 text-blue-600 font-bold";
@@ -107,7 +138,9 @@
             }
         }
 
-        function resetGame() { location.reload(); }
+        function resetGame() {
+            location.reload();
+        }
     </script>
 </body>
 </html>
