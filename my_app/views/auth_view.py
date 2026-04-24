@@ -43,6 +43,9 @@ def register_view(request):
 
     return render(request, 'auth/register_page.html', {'data': request.POST})
 
+def login_view(request):
+    return render(request, 'auth/login_page.html')
+
 def logout_view(request):
     logout(request)
     messages.success(request, 'You have been logged out successfully!')
