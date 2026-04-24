@@ -1,0 +1,95 @@
+<html>
+<head>
+    <title>Arcade System | Select Game</title>
+    {% load static %}
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <style>
+        body {
+            background-image: url('{% static "images/Games.avif" %}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+        }
+        .main-container {
+            background-color: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+        }
+        .game-card {
+            background-color: #ffffff;
+            border: 2px solid #f1f5f9;
+            transition: all 0.3s ease;
+        }
+        .game-card:hover {
+            transform: translateY(-4px);
+            border-color: #2563eb;
+            box-shadow: 0 12px 20px -8px rgba(37, 99, 235, 0.2);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-6 md:p-12 flex items-center justify-center font-sans">
+
+    <div class="main-container w-full max-w-6xl rounded-[2.5rem] p-10 md:p-16">
+        
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-black text-slate-900 tracking-tight mb-2">Game Selection</h1>
+            <div class="h-1.5 w-24 bg-blue-600 mx-auto rounded-full"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <a href="/quiz" class="game-card p-8 rounded-[2rem] flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-5">
+                    <i data-lucide="help-circle" class="w-10 h-10"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-slate-800">Quiz</h3>
+                <p class="text-slate-500 mt-2 font-medium">Test your knowledge.</p>
+            </a>
+
+            <a href="/guess" class="game-card p-8 rounded-[2rem] flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-5">
+                    <i data-lucide="hash" class="w-10 h-10"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-slate-800">Number Guess</h3>
+                <p class="text-slate-500 mt-2 font-medium">Find the hidden number.</p>
+            </a>
+
+            <a href="/math" class="game-card p-8 rounded-[2rem] flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-5">
+                    <i data-lucide="calculator" class="w-10 h-10"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-slate-800">Math Challenge</h3>
+                <p class="text-slate-500 mt-2 font-medium">Rapid fire equations.</p>
+            </a>
+
+            <a href="/memory" class="game-card p-8 rounded-[2rem] flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-5">
+                    <i data-lucide="brain" class="w-10 h-10"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-slate-800">Memory Card</h3>
+                <p class="text-slate-500 mt-2 font-medium">Match the pairs.</p>
+            </a>
+
+            <a href="/reaction" class="game-card p-8 rounded-[2rem] flex flex-col items-center text-center">
+                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-5">
+                    <i data-lucide="zap" class="w-10 h-10"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-slate-800">Reaction</h3>
+                <p class="text-slate-500 mt-2 font-medium">Test your speed.</p>
+            </a>
+
+            <a href="/" class="game-card p-8 rounded-[2rem] flex flex-col items-center justify-center text-center border-dashed border-2 border-slate-200 bg-slate-50">
+                <i data-lucide="arrow-left" class="w-8 h-8 text-slate-400 mb-2"></i>
+                <span class="font-bold text-slate-400 uppercase tracking-widest text-sm">Return Home</span>
+            </a>
+
+        </div>
+    </div>
+
+    <script src="{% static 'js/lucide.min.js' %}"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
