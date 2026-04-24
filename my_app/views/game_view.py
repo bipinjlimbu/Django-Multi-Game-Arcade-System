@@ -1,15 +1,23 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
+from ..models import Leaderboard
 import json
 
 def guess_view(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            name = data.get('game_name')
+            name = data.get('name')
             score = data.get('score')
-            print(f"Received score for {name}: {score}")
-        except json.JSONDecodeError:
-            print("Invalid JSON received")
+            
+            leaderboard = Leaderboard.objects.create(user=request.user, score=score, game=name)
+            leaderboard.save()
+            
+            messages.success(request, 'Your score has been saved to the leaderboard!')
             return redirect('guess')
-        return redirect('guess')
+            
+        except json.JSONDecodeError:
+            messages.error(request, 'Invalid JSON received')
+            return redirect('guess')
+
     return render(request, 'games/guess_game.html')
