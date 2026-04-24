@@ -16,7 +16,9 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
             border: 6px solid #f8fafc;
         }
-        table { border-collapse: separate; border-spacing: 0 10px; width: 100%; }
+        /* table-fixed use garepachhi column width control garna milchha */
+        table { border-collapse: separate; border-spacing: 0 10px; width: 100%; table-layout: fixed; }
+        
         th { 
             text-transform: uppercase; 
             font-size: 0.75rem; 
@@ -24,17 +26,23 @@
             color: #94a3b8; 
             padding: 1rem;
             letter-spacing: 0.15em;
+            text-align: center; /* Center align headers */
         }
+        
         td { 
             padding: 1.5rem 1rem; 
             background-color: #fcfcfc; 
             border-top: 1px solid #f1f5f9;
             border-bottom: 1px solid #f1f5f9;
+            text-align: center; /* Center align cell data */
+            vertical-align: middle;
         }
+
         tr:hover td { background-color: #f1f5f9; border-color: #e2e8f0; }
         
-        td:first-child { border-left: 1px solid #f1f5f9; border-top-left-radius: 1.5rem; border-bottom-left-radius: 1.5rem; padding-left: 2rem; }
-        td:last-child { border-right: 1px solid #f1f5f9; border-top-right-radius: 1.5rem; border-bottom-right-radius: 1.5rem; padding-right: 2rem; }
+        /* Rounded corners remain same */
+        td:first-child { border-left: 1px solid #f1f5f9; border-top-left-radius: 1.5rem; border-bottom-left-radius: 1.5rem; }
+        td:last-child { border-right: 1px solid #f1f5f9; border-top-right-radius: 1.5rem; border-bottom-right-radius: 1.5rem; }
 
         .rank-badge {
             width: 40px;
@@ -44,8 +52,9 @@
             justify-content: center;
             border-radius: 12px;
             font-weight: 900;
-            font-size: 1.1rem;
+            margin: 0 auto; /* Horizontally centers the badge inside cell */
         }
+        
         .gold { background: linear-gradient(135deg, #fef08a, #eab308); color: #854d0e; }
         .silver { background: linear-gradient(135deg, #e2e8f0, #94a3b8); color: #1e293b; }
         .bronze { background: linear-gradient(135deg, #ffedd5, #ea580c); color: #7c2d12; }
@@ -61,18 +70,17 @@
             <h1 class="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter uppercase italic">
                 {{ game_name|default:"Number Guess" }}
             </h1>
-            <p class="text-blue-600 font-black tracking-[0.3em] uppercase mt-2">Top Rankings</p>
-            <div class="h-2 w-24 bg-blue-600 mx-auto mt-6 rounded-full"></div>
+            <p class="text-blue-600 font-black tracking-[0.3em] uppercase mt-2">Rankings Table</p>
         </div>
 
         <div class="overflow-x-auto">
             <table class="min-w-[700px]">
                 <thead>
                     <tr>
-                        <th class="text-left">SN</th>
-                        <th class="text-left">Full Name</th>
-                        <th class="text-left">Username</th>
-                        <th class="text-right">Score (Attempts)</th>
+                        <th width="10%">SN</th>
+                        <th width="35%">Full Name</th>
+                        <th width="30%">Username</th>
+                        <th width="25%">Score</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -98,8 +106,8 @@
                             </span>
                         </td>
 
-                        <td class="text-right">
-                            <span class="text-3xl font-black text-blue-600 leading-none">
+                        <td>
+                            <span class="text-3xl font-black text-blue-600">
                                 {{ p.score }}
                             </span>
                         </td>
@@ -107,8 +115,7 @@
                     {% empty %}
                     <tr>
                         <td colspan="4" class="text-center py-20">
-                            <i data-lucide="frown" class="w-12 h-12 text-slate-200 mx-auto mb-4"></i>
-                            <p class="text-slate-400 font-bold text-xl uppercase tracking-widest">No Data Found</p>
+                            <p class="text-slate-400 font-bold text-xl uppercase">No Records</p>
                         </td>
                     </tr>
                     {% endfor %}
@@ -116,14 +123,10 @@
             </table>
         </div>
 
-        <div class="mt-12 flex flex-col md:flex-row items-center justify-between gap-6 border-t border-slate-100 pt-10">
-            <a href="/games" class="flex items-center gap-2 text-slate-400 hover:text-slate-900 font-black uppercase tracking-widest transition-all">
-                <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                Back to Games
+        <div class="mt-12 text-center">
+            <a href="/games" class="text-slate-400 hover:text-slate-900 font-black uppercase tracking-widest transition-all">
+                Back to Arcade
             </a>
-            <p class="text-slate-300 font-bold text-sm uppercase tracking-tighter">
-                Total Records: {{ players|length }}
-            </p>
         </div>
     </div>
 
