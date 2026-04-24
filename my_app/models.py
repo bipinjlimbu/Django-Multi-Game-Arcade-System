@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 class Leaderboard(models.Model):
     class choices(models.TextChoices):
         GUESS_GAME = 'Guess Game'
+        REACTION_GAME = 'Reaction Game'
     
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     score = models.IntegerField()
