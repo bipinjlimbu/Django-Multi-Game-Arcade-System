@@ -1,0 +1,135 @@
+<html>
+<head>
+    <title>Arcade | {{ game_name }} Leaderboard</title>
+    {% load static %}
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <style>
+        body {
+            background-image: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+        }
+        .leaderboard-card {
+            background-color: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            border: 6px solid #f8fafc;
+        }
+        table { border-collapse: separate; border-spacing: 0 10px; width: 100%; }
+        th { 
+            text-transform: uppercase; 
+            font-size: 0.75rem; 
+            font-weight: 900; 
+            color: #94a3b8; 
+            padding: 1rem;
+            letter-spacing: 0.15em;
+        }
+        td { 
+            padding: 1.5rem 1rem; 
+            background-color: #fcfcfc; 
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        tr:hover td { background-color: #f1f5f9; border-color: #e2e8f0; }
+        
+        td:first-child { border-left: 1px solid #f1f5f9; border-top-left-radius: 1.5rem; border-bottom-left-radius: 1.5rem; padding-left: 2rem; }
+        td:last-child { border-right: 1px solid #f1f5f9; border-top-right-radius: 1.5rem; border-bottom-right-radius: 1.5rem; padding-right: 2rem; }
+
+        .rank-badge {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 1.1rem;
+        }
+        .gold { background: linear-gradient(135deg, #fef08a, #eab308); color: #854d0e; }
+        .silver { background: linear-gradient(135deg, #e2e8f0, #94a3b8); color: #1e293b; }
+        .bronze { background: linear-gradient(135deg, #ffedd5, #ea580c); color: #7c2d12; }
+        .normal { background: #f1f5f9; color: #64748b; }
+    </style>
+</head>
+
+<body class="min-h-screen p-4 md:p-12 flex items-center justify-center font-sans">
+
+    <div class="leaderboard-card w-full max-w-5xl rounded-[3.5rem] p-8 md:p-16">
+        
+        <div class="text-center mb-14">
+            <h1 class="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter uppercase italic">
+                {{ game_name|default:"Number Guess" }}
+            </h1>
+            <p class="text-blue-600 font-black tracking-[0.3em] uppercase mt-2">Top Rankings</p>
+            <div class="h-2 w-24 bg-blue-600 mx-auto mt-6 rounded-full"></div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-[700px]">
+                <thead>
+                    <tr>
+                        <th class="text-left">SN</th>
+                        <th class="text-left">Full Name</th>
+                        <th class="text-left">Username</th>
+                        <th class="text-right">Score (Attempts)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in players %}
+                    <tr>
+                        <td>
+                            <div class="rank-badge 
+                                {% if forloop.counter == 1 %}gold
+                                {% elif forloop.counter == 2 %}silver
+                                {% elif forloop.counter == 3 %}bronze
+                                {% else %}normal{% endif %}">
+                                {{ forloop.counter }}
+                            </div>
+                        </td>
+                        
+                        <td class="font-black text-slate-800 text-xl">
+                            {{ p.user.get_full_name|default:p.user.username }}
+                        </td>
+
+                        <td>
+                            <span class="px-4 py-1.5 bg-slate-100 rounded-full text-slate-500 font-bold text-sm">
+                                @{{ p.user.username }}
+                            </span>
+                        </td>
+
+                        <td class="text-right">
+                            <span class="text-3xl font-black text-blue-600 leading-none">
+                                {{ p.score }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-20">
+                            <i data-lucide="frown" class="w-12 h-12 text-slate-200 mx-auto mb-4"></i>
+                            <p class="text-slate-400 font-bold text-xl uppercase tracking-widest">No Data Found</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-12 flex flex-col md:flex-row items-center justify-between gap-6 border-t border-slate-100 pt-10">
+            <a href="/games" class="flex items-center gap-2 text-slate-400 hover:text-slate-900 font-black uppercase tracking-widest transition-all">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                Back to Games
+            </a>
+            <p class="text-slate-300 font-bold text-sm uppercase tracking-tighter">
+                Total Records: {{ players|length }}
+            </p>
+        </div>
+    </div>
+
+    <script src="{% static 'js/lucide.min.js' %}"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
