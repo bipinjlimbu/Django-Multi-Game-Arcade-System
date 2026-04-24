@@ -10,5 +10,9 @@ def games_view(request):
 def leaderboard_view(request, game_name):
     if game_name == 'Guess Game':
         players = Leaderboard.objects.filter(game=game_name).order_by('score')
+        
+    elif game_name == 'Reaction Game':
+        players = Leaderboard.objects.filter(game=game_name).order_by('-score')
+        
     return render(request, 'main/leaderboard_page.html', {'game_name': game_name, 'players': players})
     
