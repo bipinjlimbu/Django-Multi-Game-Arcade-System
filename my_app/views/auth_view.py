@@ -23,7 +23,7 @@ def register_view(request):
                 if User.objects.filter(username=username).exists():
                     username = f"{first_name}{last_name}4".lower()
                     
-        password = 12345678
+        password = '12345678'
             
         if not errors:
             user = User.objects.create_user(username=username, password=password, first_name=first_name, last_name=last_name)
