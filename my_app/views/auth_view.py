@@ -44,6 +44,28 @@ def register_view(request):
     return render(request, 'auth/register_page.html', {'data': request.POST})
 
 def login_view(request):
+    errors = {}
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = '12345678'
+        
+        if not username:
+            errors['username'] = 'Username is required.'
+        elif not User.objects.filter(username=username).exists():
+            errors['username'] = 'Invalid username. Please check your username and try again.'
+        
+        if not errors:
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, 'You have been logged in successfully!')
+                return redirect('home')
+            else:
+                errors['username'] = 'Invalid username or password. Please check your credentials and try again.'
+        
+        return render(request, 'auth/login_page.html', {'errors': errors, 'data': request.POST}) 
+
     return render(request, 'auth/login_page.html')
 
 def logout_view(request):
