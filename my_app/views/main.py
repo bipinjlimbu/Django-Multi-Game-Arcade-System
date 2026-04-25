@@ -7,6 +7,9 @@ def home_view(request):
 def games_view(request):
     return render(request, 'main/games_page.html')
 
+def leaderboard_selection_view(request):
+    return render(request, 'main/leaderboard_selection_page.html')
+
 def leaderboard_view(request, game_name):
     if game_name == 'Guess Game':
         players = Leaderboard.objects.filter(game=game_name).order_by('score')
