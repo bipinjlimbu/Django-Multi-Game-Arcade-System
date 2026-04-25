@@ -11,6 +11,6 @@ urlpatterns = [
     path('games/', games_view, name='games'),
     path('leaderboard/', leaderboard_selection_view, name='leaderboard_selection'),
     path('leaderboard/<str:game_slug>/', leaderboard_view, name='leaderboard'),
-    path('guess/', guess_view, name='guess'),
-    path('reaction/', reaction_view, name='reaction'),
+    path('games/number-guess/', guess_view, name='guess'),
+    path('games/reaction-game/', reaction_view, name='reaction'),
 ]
