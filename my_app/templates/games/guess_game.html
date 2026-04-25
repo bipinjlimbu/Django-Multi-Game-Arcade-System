@@ -139,7 +139,7 @@
                 
                 sendScore(attempts);
             } else {
-                feedback.innerText = guess > secretNum ? "Too High! ↓" : "Too Low! ↑";
+                feedback.innerText = guess > secretNum ? "Too High! Guess Lower Number ↓" : "Too Low! Guess Higher Number ↑";
                 feedback.className = "mb-6 p-4 rounded-2xl bg-blue-50 text-blue-600 font-bold";
                 input.value = '';
                 input.focus();
