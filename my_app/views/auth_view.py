@@ -22,7 +22,11 @@ def register_view(request):
                 username = f"{first_name}{last_name}3".lower()
                 if User.objects.filter(username=username).exists():
                     username = f"{first_name}{last_name}4".lower()
+        else:
+            errors['first_name'] = 'There are already users with the same first and last name. Please use a different name to ensure a unique username.'
                     
+        first_name = first_name.capitalize()
+        last_name = last_name.capitalize()
         password = '12345678'
             
         if not errors:
