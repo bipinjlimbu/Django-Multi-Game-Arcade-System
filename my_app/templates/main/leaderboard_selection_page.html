@@ -1,0 +1,116 @@
+<html>
+<head>
+    <title>Arcade | Leaderboard Selection</title>
+    {% load static %}
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <style>
+        body {
+            /* High-quality online gaming background */
+            background-image: linear-gradient(rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.8)), 
+                              url('https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=2070');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+        }
+        .main-container {
+            background-color: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+        }
+        .game-card {
+            background-color: #ffffff;
+            border: 2px solid #f1f5f9;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+        .game-card:hover {
+            transform: translateX(12px);
+            border-color: #2563eb;
+            box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.15);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-6 md:p-12 flex items-center justify-center font-sans text-slate-900">
+
+    <div class="main-container w-full max-w-2xl rounded-[2.5rem] p-8 md:p-12 border border-white/20">
+        
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-black text-slate-900 tracking-tight mb-2 uppercase italic">Leaderboards</h1>
+            <p class="text-blue-600 font-bold text-xs uppercase tracking-[0.2em]">Select game to view rankings</p>
+            <div class="h-1.5 w-20 bg-blue-600 mx-auto rounded-full mt-3"></div>
+        </div>
+
+        <div class="flex flex-col gap-4">
+            
+            <a href="/leaderboard/reaction-game/" class="game-card p-5 rounded-3xl gap-6">
+                <div class="w-14 h-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center shrink-0">
+                    <i data-lucide="zap" class="w-8 h-8"></i>
+                </div>
+                <div class="flex-grow text-left">
+                    <h3 class="text-xl font-black text-slate-800">Reaction Game</h3>
+                    <p class="text-slate-400 font-medium text-xs uppercase">Speed Rankings</p>
+                </div>
+                <i data-lucide="trophy" class="w-6 h-6 text-yellow-500"></i>
+            </a>
+
+            <a href="/leaderboard/quiz/" class="game-card p-5 rounded-3xl gap-6">
+                <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0">
+                    <i data-lucide="help-circle" class="w-8 h-8"></i>
+                </div>
+                <div class="flex-grow text-left">
+                    <h3 class="text-xl font-black text-slate-800">Quiz Challenge</h3>
+                    <p class="text-slate-400 font-medium text-xs uppercase">Knowledge Board</p>
+                </div>
+                <i data-lucide="trophy" class="w-6 h-6 text-yellow-500"></i>
+            </a>
+
+            <a href="/leaderboard/number-guess/" class="game-card p-5 rounded-3xl gap-6">
+                <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0">
+                    <i data-lucide="hash" class="w-8 h-8"></i>
+                </div>
+                <div class="flex-grow text-left">
+                    <h3 class="text-xl font-black text-slate-800">Number Guess</h3>
+                    <p class="text-slate-400 font-medium text-xs uppercase">Precision Rankings</p>
+                </div>
+                <i data-lucide="trophy" class="w-6 h-6 text-yellow-500"></i>
+            </a>
+
+            <a href="/leaderboard/math-challenge/" class="game-card p-5 rounded-3xl gap-6">
+                <div class="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center shrink-0">
+                    <i data-lucide="calculator" class="w-8 h-8"></i>
+                </div>
+                <div class="flex-grow text-left">
+                    <h3 class="text-xl font-black text-slate-800">Math Challenge</h3>
+                    <p class="text-slate-400 font-medium text-xs uppercase">Logic Board</p>
+                </div>
+                <i data-lucide="trophy" class="w-6 h-6 text-yellow-500"></i>
+            </a>
+
+            <a href="/leaderboard/memory-tile/" class="game-card p-5 rounded-3xl gap-6">
+                <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center shrink-0">
+                    <i data-lucide="brain" class="w-8 h-8"></i>
+                </div>
+                <div class="flex-grow text-left">
+                    <h3 class="text-xl font-black text-slate-800">Memory Card</h3>
+                    <p class="text-slate-400 font-medium text-xs uppercase">Memory Masters</p>
+                </div>
+                <i data-lucide="trophy" class="w-6 h-6 text-yellow-500"></i>
+            </a>
+
+            <a href="/" class="flex items-center justify-center p-4 gap-2 text-slate-400 hover:text-blue-600 transition-colors mt-6 group border-t border-slate-100 pt-6">
+                <i data-lucide="arrow-left" class="w-5 h-5 group-hover:-translate-x-1 transition-transform"></i>
+                <span class="font-bold uppercase tracking-[0.3em] text-[10px]">Return Home</span>
+            </a>
+
+        </div>
+    </div>
+
+    <script src="{% static 'js/lucide.min.js' %}"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
