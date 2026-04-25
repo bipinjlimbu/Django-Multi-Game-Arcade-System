@@ -133,7 +133,7 @@
             fetch('/reaction/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-                body: JSON.stringify({ name: 'Reaction Game', score: score })
+                body: JSON.stringify({ slug: 'reaction-game', score: score })
             });
         }
         spawn();
