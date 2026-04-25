@@ -10,8 +10,8 @@ def guess_view(request):
             slug = data.get('slug')
             score = data.get('score')
             game = Game.objects.get(slug=slug)
-            
-            if not Leaderboard.objects.filter(user = request.user).exists():
+                        
+            if not Leaderboard.objects.filter(user = request.user, game=game).exists():
                 leaderboard = Leaderboard.objects.create(user=request.user, score=score, game=game)
                 leaderboard.save()
                 
@@ -22,11 +22,11 @@ def guess_view(request):
                     leaderboard.save()
             
             messages.success(request, 'Your score has been saved to the leaderboard!')
-            return redirect('guess')
+            return redirect('/games/number-guess/')
             
         except json.JSONDecodeError:
             messages.error(request, 'Invalid JSON received')
-            return redirect('guess')
+            return redirect('/games/number-guess/')
 
     return render(request, 'games/guess_game.html')
 
@@ -38,7 +38,7 @@ def reaction_view(request):
             score = data.get('score')
             game = Game.objects.get(slug=slug)
 
-            if not Leaderboard.objects.filter(user = request.user).exists():
+            if not Leaderboard.objects.filter(user = request.user, game=game).exists():
                 leaderboard = Leaderboard.objects.create(user=request.user, score=score, game=game)
                 leaderboard.save()
                 
@@ -49,10 +49,10 @@ def reaction_view(request):
                     leaderboard.save()
             
             messages.success(request, 'Your score has been saved to the leaderboard!')
-            return redirect('reaction')
+            return redirect('/games/reaction-game/')
             
         except json.JSONDecodeError:
             messages.error(request, 'Invalid JSON received')
-            return redirect('reaction')
+            return redirect('/games/reaction-game/')
         
     return render(request, 'games/reaction_game.html')

@@ -130,7 +130,7 @@
             gameOverScreen.classList.add('flex');
             document.getElementById('final-score').innerText = score;
 
-            fetch('/reaction/', {
+            fetch('/games/reaction-game/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
                 body: JSON.stringify({ slug: 'reaction-game', score: score })
