@@ -36,8 +36,15 @@ def reaction_view(request):
             name = data.get('name')
             score = data.get('score')
             
-            leaderboard = Leaderboard.objects.create(user=request.user, score=score, game=name)
-            leaderboard.save()
+            if not Leaderboard.objects.filter(user = request.user).exists():
+                leaderboard = Leaderboard.objects.create(user=request.user, score=score, game=name)
+                leaderboard.save()
+                
+            else:
+                leaderboard = Leaderboard.objects.get(user=request.user, game=name)
+                if score > leaderboard.score:
+                    leaderboard.score = score
+                    leaderboard.save()
             
             messages.success(request, 'Your score has been saved to the leaderboard!')
             return redirect('reaction')
