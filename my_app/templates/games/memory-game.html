@@ -5,110 +5,69 @@
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
     <style>
         body {
-            background-image: linear-gradient(rgba(2, 6, 23, 0.9), rgba(2, 6, 23, 0.9)), 
-                              url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&q=80&w=2070');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            background-color: #020617;
+            background-image: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
             margin: 0;
-            overflow-x: hidden;
+            overflow: hidden;
+            font-family: sans-serif;
+            color: white;
         }
-
         .perspective { perspective: 1000px; }
-        
         .flip-card-inner {
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             transform-style: preserve-3d;
-            height: 100%;
-            width: 100%;
+            height: 100%; width: 100%;
         }
-
         .flipped { transform: rotateY(180deg); }
-
         .flip-card-front, .flip-card-back {
             backface-visibility: hidden;
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            border-radius: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            border-radius: 0.75rem;
+            display: flex; align-items: center; justify-content: center;
         }
-
-        .flip-card-front {
-            background-color: #1e293b;
-            border: 2px solid #334155;
-        }
-
-        .flip-card-back {
-            background-color: #2563eb;
-            border: 2px solid #ffffff;
-            transform: rotateY(180deg);
-        }
-
-        /* Match Animation bsdk */
+        .flip-card-front { background-color: #1e293b; border: 2px solid #334155; }
+        .flip-card-back { background-color: #2563eb; border: 2px solid #ffffff; transform: rotateY(180deg); }
+        
         @keyframes matchedPulse {
             0% { transform: scale(1) rotateY(180deg); }
-            50% { transform: scale(1.1) rotateY(180deg); box-shadow: 0 0 25px #3b82f6; }
+            50% { transform: scale(1.1) rotateY(180deg); box-shadow: 0 0 20px #10b981; }
             100% { transform: scale(1) rotateY(180deg); }
         }
-        .matched-card .flip-card-inner {
-            animation: matchedPulse 0.5s ease-out;
-        }
-        .matched-card .flip-card-back {
-            background-color: #059669 !important; /* Green for success */
-            border-color: #34d399 !important;
-        }
+        .matched-card .flip-card-inner { animation: matchedPulse 0.5s ease-out forwards; }
+        .matched-card .flip-card-back { background-color: #059669 !important; border-color: #34d399 !important; }
 
-        /* Offline Particles Animation bsdk */
-        .particle {
-            position: fixed;
-            width: 10px;
-            height: 10px;
-            pointer-events: none;
-            z-index: 100;
-            border-radius: 2px;
-        }
+        .particle { position: fixed; width: 8px; height: 8px; pointer-events: none; z-index: 100; border-radius: 50%; }
         @keyframes explode {
-            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
-            100% { transform: translate(var(--tx), var(--ty)) rotate(720deg); opacity: 0; }
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
         }
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col items-center justify-center p-6 font-sans text-white">
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
 
     <div class="text-center mb-8">
-        <h1 class="text-5xl font-black italic tracking-tighter uppercase text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
-            Memory Game
-        </h1>
+        <h1 class="text-5xl font-black italic uppercase text-blue-500">Memory Game</h1>
         <div class="flex justify-center gap-6 mt-6">
-            <div class="bg-white/5 backdrop-blur-md px-8 py-3 rounded-2xl border border-white/10 shadow-xl">
-                <span class="text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] block mb-1">Timer</span>
-                <span id="timer" class="text-3xl font-mono font-black">00.00s</span>
+            <div class="bg-slate-800/50 px-6 py-2 rounded-xl border border-slate-700">
+                <span class="text-slate-400 text-[10px] font-bold uppercase block">Timer</span>
+                <span id="timer" class="text-2xl font-mono font-black">00.00s</span>
             </div>
-            <div class="bg-white/5 backdrop-blur-md px-8 py-3 rounded-2xl border border-white/10 shadow-xl">
-                <span class="text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] block mb-1">Pairs</span>
-                <span id="pairs-count" class="text-3xl font-mono font-black">0/10</span>
+            <div id="status-box" class="bg-yellow-500/20 px-6 py-2 rounded-xl border border-yellow-500/50">
+                <span id="status-text" class="text-yellow-500 font-black uppercase text-sm tracking-widest p-2 block">Memorize!</span>
             </div>
         </div>
     </div>
 
-    <div id="game-board" class="grid grid-cols-4 sm:grid-cols-5 gap-4 max-w-3xl w-full perspective">
-        </div>
-
-    <form id="score-form" method="POST" action="/save-score/" class="hidden">
-        {% csrf_token %}
-        <input type="hidden" name="game_slug" value="memory-game">
-        <input type="hidden" name="score" id="final-score">
-    </form>
+    <div id="game-board" class="grid grid-cols-4 sm:grid-cols-5 gap-3 max-w-2xl w-full perspective"></div>
 
     <script src="{% static 'js/lucide.min.js' %}"></script>
     <script>
         const board = document.getElementById('game-board');
         const timerDisplay = document.getElementById('timer');
-        const pairsDisplay = document.getElementById('pairs-count');
+        const statusText = document.getElementById('status-text');
+        const statusBox = document.getElementById('status-box');
         
         let flippedCards = [];
         let matchedPairs = 0;
@@ -122,15 +81,11 @@
         function initGame() {
             gameSet.forEach((num) => {
                 const card = document.createElement('div');
-                card.className = 'h-28 sm:h-36 cursor-pointer group relative';
+                card.className = 'h-24 sm:h-32 cursor-pointer relative';
                 card.innerHTML = `
                     <div class="flip-card-inner flipped" data-number="${num}">
-                        <div class="flip-card-front">
-                            <i data-lucide="help-circle" class="w-10 h-10 text-slate-700"></i>
-                        </div>
-                        <div class="flip-card-back">
-                            <span class="text-4xl font-black">${num}</span>
-                        </div>
+                        <div class="flip-card-front"><i data-lucide="brain" class="w-8 h-8 text-slate-600"></i></div>
+                        <div class="flip-card-back"><span class="text-3xl font-black">${num}</span></div>
                     </div>
                 `;
                 card.onclick = () => flipCard(card);
@@ -138,30 +93,25 @@
             });
             lucide.createIcons();
 
-            // Initial Peek
             setTimeout(() => {
                 document.querySelectorAll('.flip-card-inner').forEach(c => c.classList.remove('flipped'));
                 isGameActive = true;
+                statusText.innerText = "Match Them!";
+                statusText.className = "text-green-500 font-black uppercase text-sm tracking-widest p-2 block";
+                statusBox.className = "bg-green-500/20 px-6 py-2 rounded-xl border border-green-500/50";
                 startTime = Date.now();
-                timerInterval = setInterval(updateTimer, 10);
+                timerInterval = setInterval(() => {
+                    timerDisplay.innerText = ((Date.now() - startTime) / 1000).toFixed(2) + 's';
+                }, 10);
             }, 3000);
-        }
-
-        function updateTimer() {
-            const now = (Date.now() - startTime) / 1000;
-            timerDisplay.innerText = now.toFixed(2) + 's';
         }
 
         function flipCard(card) {
             const inner = card.querySelector('.flip-card-inner');
             if (!isGameActive || inner.classList.contains('flipped') || flippedCards.length === 2) return;
-
             inner.classList.add('flipped');
             flippedCards.push(card);
-
-            if (flippedCards.length === 2) {
-                checkMatch();
-            }
+            if (flippedCards.length === 2) checkMatch();
         }
 
         function checkMatch() {
@@ -171,7 +121,6 @@
 
             if (n1 === n2) {
                 matchedPairs++;
-                pairsDisplay.innerText = `${matchedPairs}/10`;
                 c1.classList.add('matched-card');
                 c2.classList.add('matched-card');
                 flippedCards = [];
@@ -186,22 +135,16 @@
         }
 
         function createParticles() {
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < 40; i++) {
                 const p = document.createElement('div');
                 p.className = 'particle';
-                p.style.left = '50%';
-                p.style.top = '50%';
-                p.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                
-                const tx = (Math.random() - 0.5) * 800 + 'px';
-                const ty = (Math.random() - 0.5) * 800 + 'px';
-                
-                p.style.setProperty('--tx', tx);
-                p.style.setProperty('--ty', ty);
-                p.style.animation = `explode ${1 + Math.random()}s forwards ease-out`;
-                
+                p.style.left = '50%'; p.style.top = '50%';
+                p.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                p.style.setProperty('--tx', (Math.random() - 0.5) * 600 + 'px');
+                p.style.setProperty('--ty', (Math.random() - 0.5) * 600 + 'px');
+                p.style.animation = `explode ${0.5 + Math.random()}s forwards ease-out`;
                 document.body.appendChild(p);
-                setTimeout(() => p.remove(), 2000);
+                setTimeout(() => p.remove(), 1000);
             }
         }
 
@@ -210,10 +153,18 @@
             isGameActive = false;
             createParticles();
             
-            document.getElementById('final-score').value = timerDisplay.innerText.replace('s', '');
-            setTimeout(() => {
-                document.getElementById('score-form').submit();
-            }, 2000);
+            // Time lai Milliseconds (Integer) ma convert garne bsdk
+            const timeSeconds = parseFloat(timerDisplay.innerText.replace('s', ''));
+            const finalScoreInt = Math.round(timeSeconds * 100); 
+            
+            fetch('/save-score/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify({ slug: 'memory-game', score: finalScoreInt })
+            })
+            .then(res => {
+                if (res.ok) setTimeout(() => { window.location.href = '/leaderboard/memory-game/'; }, 1500);
+            });
         }
 
         initGame();

@@ -14,7 +14,7 @@ def save_score(request):
             slug = data.get('slug')
             score = data.get('score')
             game = Game.objects.get(slug=slug)
-                        
+                    
             if not Leaderboard.objects.filter(user = request.user, game=game).exists():
                 leaderboard = Leaderboard.objects.create(user=request.user, score=score, game=game)
                 leaderboard.save()
