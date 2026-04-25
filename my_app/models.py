@@ -2,14 +2,20 @@ from django.db import models
 from django.contrib.auth.models import User
 
 # Create your models here.
-class Leaderboard(models.Model):
-    class choices(models.TextChoices):
-        GUESS_GAME = 'Guess Game'
-        REACTION_GAME = 'Reaction Game'
+class Game(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
+    description = models.TextField()
+    icon = models.CharField(max_length=100, default='gamepad')
+    color = models.CharField(max_length=20, default='blue')
+
+    def __str__(self):
+        return self.name
     
+class Leaderboard(models.Model):    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     score = models.IntegerField()
-    game = models.CharField(max_length=50, choices=choices.choices)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
