@@ -1,21 +1,22 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from ..models import Leaderboard
+from ..models import Leaderboard, Game
 import json
 
 def guess_view(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            name = data.get('name')
+            slug = data.get('slug')
             score = data.get('score')
+            game = Game.objects.get(slug=slug)
             
             if not Leaderboard.objects.filter(user = request.user).exists():
-                leaderboard = Leaderboard.objects.create(user=request.user, score=score, game=name)
+                leaderboard = Leaderboard.objects.create(user=request.user, score=score, game=game)
                 leaderboard.save()
                 
             else:
-                leaderboard = Leaderboard.objects.get(user=request.user, game=name)
+                leaderboard = Leaderboard.objects.get(user=request.user, game=game)
                 if score < leaderboard.score: 
                     leaderboard.score = score
                     leaderboard.save()
