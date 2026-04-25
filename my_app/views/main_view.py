@@ -14,7 +14,7 @@ def leaderboard_selection_view(request):
 
 def leaderboard_view(request, game_slug):
     game = Game.objects.get(slug=game_slug)
-    if game.name == 'Number Guess':
+    if game.name == 'Number Guess' or game.name == 'Memory Game':
         players = Leaderboard.objects.filter(game=game).order_by('score')
         
     elif game.name == 'Reaction Game':
