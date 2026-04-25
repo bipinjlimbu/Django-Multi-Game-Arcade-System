@@ -56,3 +56,6 @@ def reaction_view(request):
             return redirect('/games/reaction-game/')
         
     return render(request, 'games/reaction_game.html')
+
+def memory_view(request):
+    return render(request, 'games/memory_game.html')

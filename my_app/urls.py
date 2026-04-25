@@ -1,7 +1,7 @@
 from django.urls import path
 from .views.auth_view import register_view, login_view, logout_view
 from .views.main_view import home_view, games_view, leaderboard_selection_view, leaderboard_view
-from .views.game_view import guess_view, reaction_view
+from .views.game_view import guess_view, reaction_view, memory_view
 
 urlpatterns = [
     path('', home_view, name='home'),
@@ -13,4 +13,5 @@ urlpatterns = [
     path('leaderboard/<str:game_slug>/', leaderboard_view, name='leaderboard'),
     path('games/number-guess/', guess_view, name='guess'),
     path('games/reaction-game/', reaction_view, name='reaction'),
+    path('games/memory-game/', memory_view, name='memory'),
 ]
