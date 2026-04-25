@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from ..models import Leaderboard
+from ..models import Leaderboard, Game
 
 def home_view(request):
     return render(request, 'main/home_page.html')
@@ -8,7 +8,8 @@ def games_view(request):
     return render(request, 'main/games_page.html')
 
 def leaderboard_selection_view(request):
-    return render(request, 'main/leaderboard_selection_page.html')
+    games = Game.objects.all()
+    return render(request, 'main/leaderboard_selection_page.html', {'games': games})
 
 def leaderboard_view(request, game_name):
     if game_name == 'Guess Game':
