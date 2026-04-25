@@ -21,10 +21,14 @@ def save_score(request):
                 
             else:
                 leaderboard = Leaderboard.objects.get(user=request.user, game=game)
-                if (game.name == 'Number Guess' and score < leaderboard.score) or (game.name == 'Reaction Game' and score > leaderboard.score):
+                if (game.name == 'Number Guess' or game.name == 'Memory Game') and score < leaderboard.score:
                     leaderboard.score = score
                     leaderboard.save()
-            
+                    
+                elif game.name == 'Reaction Game' and score > leaderboard.score:
+                    leaderboard.score = score
+                    leaderboard.save()
+
             messages.success(request, 'Your score has been saved to the leaderboard!')
             return redirect(f'/games/{slug}/')
             
