@@ -48,6 +48,11 @@
         </p>
 
         <div class="flex justify-center gap-4">
+            <a href="/leaderboard" class="inline-flex items-center gap-3 px-8 py-4 bg-yellow-500 hover:bg-yellow-600 text-white font-bold text-lg rounded-xl transition-all duration-300 transform hover:-translate-y-1 shadow-lg uppercase tracking-wider">
+                View Leaderboard
+                <i data-lucide="trophy" class="w-5 h-5"></i>
+            </a>
+            
             {% if user.is_authenticated %}
                 <a href="/games" class="inline-flex items-center gap-3 px-12 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl rounded-xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl uppercase tracking-wider">
                     Start Game
