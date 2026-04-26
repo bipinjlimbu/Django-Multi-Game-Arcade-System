@@ -1,0 +1,220 @@
+<html>
+<head>
+    <title>Math Challenge | Arcade</title>
+    {% load static %}
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #020617;
+            background-image: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+            margin: 0; overflow: hidden; font-family: sans-serif; color: white;
+        }
+
+        /* UP/DOWN Arrow Hataune Logic bsdk */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* End Screen Overlay */
+        #end-screen {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100; flex-direction: column;
+            align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.5s ease;
+        }
+        #end-screen.active { display: flex; opacity: 1; }
+
+        .btn-game {
+            width: 220px; padding: 12px; margin: 8px; border-radius: 8px;
+            font-weight: 800; text-transform: uppercase; cursor: pointer; text-decoration: none; text-align: center;
+        }
+        .btn-primary { background: #f59e0b; color: white; border: none; }
+        .btn-outline { background: transparent; color: white; border: 2px solid #334155; }
+
+        .answer-input {
+            background: rgba(255, 255, 255, 0.05); border: 2px solid #334155;
+            outline: none; transition: all 0.2s;
+        }
+        .answer-input:focus { border-color: #f59e0b; background: rgba(255, 255, 255, 0.1); }
+
+        .shake { animation: shake 0.4s both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .minus-point { color: #ef4444; animation: fadeUp 0.8s ease-out forwards; position: absolute; font-weight: bold; font-size: 1.5rem; }
+        @keyframes fadeUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-40px); }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div class="text-center mb-6">
+        <div id="level-indicator" class="font-black uppercase tracking-[0.2em] text-green-500 mb-2 text-xl">Level: Easy</div>
+        <h1 class="text-5xl font-black italic uppercase text-orange-500 tracking-tighter">Math Challenge</h1>
+        
+        <div class="flex justify-center gap-6 mt-6">
+            <div class="bg-slate-800/50 px-6 py-2 rounded-xl border border-slate-700">
+                <span class="text-slate-400 text-[10px] font-bold uppercase block">Time Left</span>
+                <span id="timer" class="text-2xl font-mono font-black text-red-500">30s</span>
+            </div>
+            <div class="bg-slate-800/50 px-6 py-2 rounded-xl border border-slate-700 relative">
+                <span class="text-slate-400 text-[10px] font-bold uppercase block">Total Score</span>
+                <span id="score-display" class="text-2xl font-mono font-black text-green-500">0</span>
+                <div id="score-float-container" class="absolute top-0 left-0 w-full flex justify-center"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-card" class="bg-slate-900/50 p-10 rounded-3xl border border-slate-800 shadow-2xl text-center max-w-md w-full backdrop-blur-sm">
+        <div id="problem" class="text-6xl font-black mb-8 text-white tracking-tighter min-h-[90px] flex items-center justify-center">0 + 0</div>
+        <input type="number" id="answer" class="answer-input w-full text-5xl p-5 rounded-2xl text-center font-black" placeholder="?" autofocus autocomplete="off">
+        <div class="mt-6 flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-slate-500">
+            <span>Level Timer: <span id="level-timer" class="text-white">30</span>s</span>
+            <span id="scoring-rules" class="text-blue-400">+5 / -2</span>
+        </div>
+    </div>
+
+    <div id="end-screen">
+        <h2 class="text-7xl font-black italic text-orange-500 mb-2">FINISHED!</h2>
+        <p class="text-slate-400 mb-10 font-mono text-2xl">Final Score: <span id="final-score-display" class="text-white">0</span></p>
+        <button onclick="location.reload()" class="btn-game btn-primary">Try Again</button>
+        <a href="/leaderboard/math-challenge/" class="btn-game btn-outline">Leaderboard</a>
+        <a href="/games/" class="btn-game btn-outline">Go Back</a>
+    </div>
+
+    <script>
+        const problemEl = document.getElementById('problem');
+        const answerInput = document.getElementById('answer');
+        const scoreEl = document.getElementById('score-display');
+        const levelTimerEl = document.getElementById('level-timer');
+        const timerEl = document.getElementById('timer');
+        const levelIndicator = document.getElementById('level-indicator');
+        const scoringRules = document.getElementById('scoring-rules');
+        const endScreen = document.getElementById('end-screen');
+        const finalScoreSpan = document.getElementById('final-score-display');
+
+        let score = 0;
+        let currentLevel = 1; 
+        let timeLeft = 30;    
+        let currentAnswer = 0;
+        let gameActive = true;
+
+        const rules = {
+            1: { add: 5, sub: 2, label: "Easy", color: "text-green-500" },
+            2: { add: 10, sub: 4, label: "Medium", color: "text-yellow-500" },
+            3: { add: 15, sub: 6, label: "Hard", color: "text-red-500" }
+        };
+
+        function generateProblem() {
+            let n1, n2, n3, op1, op2;
+            
+            if (currentLevel === 1) { 
+                // Easy: Add/Sub only (1-30)
+                n1 = Math.floor(Math.random() * 30) + 1;
+                n2 = Math.floor(Math.random() * 30) + 1;
+                op1 = Math.random() > 0.5 ? '+' : '-';
+                if (op1 === '-' && n1 < n2) [n1, n2] = [n2, n1];
+                
+                problemEl.innerText = `${n1} ${op1 === '-' ? '−' : '+'} ${n2}`;
+                currentAnswer = eval(`${n1} ${op1} ${n2}`);
+            } 
+            else if (currentLevel === 2) { 
+                // Medium: Multiplication Only (2-12)
+                n1 = Math.floor(Math.random() * 11) + 2;
+                n2 = Math.floor(Math.random() * 11) + 2;
+                
+                problemEl.innerText = `${n1} × ${n2}`;
+                currentAnswer = n1 * n2;
+            } 
+            else { 
+                // Hard: 12 * 2 + 13 type
+                n1 = Math.floor(Math.random() * 12) + 2;
+                n2 = Math.floor(Math.random() * 9) + 2;
+                n3 = Math.floor(Math.random() * 40) + 5;
+                op1 = '*';
+                op2 = Math.random() > 0.5 ? '+' : '-';
+                
+                let intermediate = n1 * n2;
+                if (op2 === '-' && intermediate < n3) op2 = '+'; 
+                currentAnswer = op2 === '+' ? (intermediate + n3) : (intermediate - n3);
+                
+                problemEl.innerText = `${n1} × ${n2} ${op2 === '+' ? '+' : '−'} ${n3}`;
+            }
+        }
+
+        function showDeduction(amt) {
+            const float = document.createElement('div');
+            float.className = 'minus-point';
+            float.innerText = `-${amt}`;
+            document.getElementById('score-float-container').appendChild(float);
+            setTimeout(() => float.remove(), 800);
+        }
+
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && gameActive) {
+                const userAns = parseInt(answerInput.value);
+                const currentRule = rules[currentLevel];
+
+                if (userAns === currentAnswer) {
+                    score += currentRule.add;
+                    scoreEl.innerText = score;
+                    answerInput.value = '';
+                    generateProblem();
+                } else if (!isNaN(userAns)) {
+                    score = Math.max(0, score - currentRule.sub);
+                    scoreEl.innerText = score;
+                    showDeduction(currentRule.sub);
+                    answerInput.classList.add('shake');
+                    setTimeout(() => answerInput.classList.remove('shake'), 400);
+                    answerInput.value = '';
+                }
+            }
+        });
+
+        const gameTimer = setInterval(() => {
+            if (!gameActive) return;
+            timeLeft--;
+            timerEl.innerText = timeLeft + 's';
+            levelTimerEl.innerText = timeLeft;
+
+            if (timeLeft <= 0) {
+                if (currentLevel < 3) {
+                    currentLevel++;
+                    timeLeft = 30;
+                    const nextRule = rules[currentLevel];
+                    levelIndicator.innerText = `Level: ${nextRule.label}`;
+                    levelIndicator.className = `font-black uppercase tracking-[0.2em] mb-2 text-xl ${nextRule.color}`;
+                    scoringRules.innerText = `+${nextRule.add} / -${nextRule.sub}`;
+                    generateProblem();
+                } else {
+                    clearInterval(gameTimer);
+                    endGame();
+                }
+            }
+        }, 1000);
+
+        function endGame() {
+            gameActive = false;
+            answerInput.blur();
+            finalScoreSpan.innerText = score;
+            fetch('/save-score/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify({ slug: 'math-challenge', score: score })
+            }).then(() => setTimeout(() => endScreen.classList.add('active'), 500));
+        }
+
+        generateProblem();
+    </script>
+</body>
+</html>
