@@ -12,21 +12,6 @@ class Game(models.Model):
     
     def __str__(self):
         return self.name
-    
-class Leaderboard(models.Model):    
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    score = models.IntegerField()
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    date = models.DateTimeField(auto_now_add=True)
-
-    @property
-    def formatted_score(self):
-        if self.game.slug == 'memory-game':
-            return f"{self.score / 100:.2f}s"
-        return str(self.score)
-    
-    def __str__(self):
-        return f"{self.user.username} - {self.game}: {self.score}"
 
 class QuizCategory(models.Model):
     name = models.CharField(max_length=100)
@@ -41,6 +26,22 @@ class QuizCategory(models.Model):
 
     def __str__(self):
         return self.name
+    
+class Leaderboard(models.Model):    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    score = models.IntegerField()
+    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    quiz_category = models.ForeignKey(QuizCategory, on_delete=models.CASCADE, null=True, blank=True)
+    date = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def formatted_score(self):
+        if self.game.slug == 'memory-game':
+            return f"{self.score / 100:.2f}s"
+        return str(self.score)
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.game}: {self.score}"
 
 class Question(models.Model):
     LEVEL_CHOICES = [
