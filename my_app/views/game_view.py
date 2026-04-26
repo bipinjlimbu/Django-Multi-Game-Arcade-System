@@ -6,9 +6,9 @@ import json
 def game_view(request, game_slug):
     game = Game.objects.get(slug=game_slug)
     
-    if game.name == 'Quiz Game':
+    if game.slug == 'quiz':
         categories = QuizCategory.objects.all()
-        return render(request, 'quiz_selection_page.html', {'categories': categories})
+        return render(request, 'games/quiz_selection_page.html', {'categories': categories})
     
     return render(request, f'games/{game_slug}.html', {'game': game})
 
