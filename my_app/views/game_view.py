@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
-from ..models import Leaderboard, Game, QuizCategory
+from ..models import Leaderboard, Game, QuizCategory, Question, Option
+from django.http import JsonResponse
 import json
 
 def game_view(request, game_slug):
@@ -47,3 +48,25 @@ def save_score(request):
 def quiz_view(request, category_slug):
     category = get_object_or_404(QuizCategory, slug=category_slug)
     return render(request, 'games/quiz_page.html', {'category': category})
+
+def get_quiz_questions(request, category_slug, level):
+    questions = Question.objects.filter(
+        category__slug=category_slug, 
+        level=level
+    ).order_by('?')[:10]
+    
+    data = []
+    for q in questions:
+        options = []
+        for opt in q.options.all():
+            options.append({
+                'text': opt.text,
+                'is_correct': opt.is_correct
+            })
+        
+        data.append({
+            'question': q.text,
+            'options': options
+        })
+    
+    return JsonResponse({'questions': data})
