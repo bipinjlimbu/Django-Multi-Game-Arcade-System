@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.shortcuts import get_object_or_404
 from ..models import Leaderboard, Game, QuizCategory
 import json
 
@@ -42,3 +43,7 @@ def save_score(request):
             return redirect(f'/games/{slug}/')
 
     return redirect(f'/games/{slug}/')
+
+def quiz_view(request, category_slug):
+    category = get_object_or_404(QuizCategory, slug=category_slug)
+    return render(request, 'games/quiz_page.html', {'category': category})
