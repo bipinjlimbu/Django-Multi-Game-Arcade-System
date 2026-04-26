@@ -17,7 +17,7 @@ def leaderboard_view(request, game_slug):
     if game.name == 'Number Guess' or game.name == 'Memory Game':
         players = Leaderboard.objects.filter(game=game).order_by('score')
         
-    elif game.name == 'Reaction Game':
+    elif game.name == 'Reaction Game' or game.name == 'Math Challenge':
         players = Leaderboard.objects.filter(game=game).order_by('-score')
         
     return render(request, 'main/leaderboard_page.html', {'game': game, 'players': players})
