@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from ..models import Leaderboard, Game, QuizCategory, Question, Option
 from django.http import JsonResponse
 import json
+import random
 
 def game_view(request, game_slug):
     game = Game.objects.get(slug=game_slug)
@@ -20,8 +21,9 @@ def save_score(request):
             data = json.loads(request.body)
             slug = data.get('slug')
             score = data.get('score')
+            category = data.get('category')
             game = Game.objects.get(slug=slug)
-                    
+            
             if not Leaderboard.objects.filter(user = request.user, game=game).exists():
                 leaderboard = Leaderboard.objects.create(user=request.user, score=score, game=game)
                 leaderboard.save()
@@ -50,23 +52,29 @@ def quiz_view(request, category_slug):
     return render(request, 'games/quiz_page.html', {'category': category})
 
 def get_quiz_questions(request, category_slug, level):
-    questions = Question.objects.filter(
+    # Questions fetch garne
+    questions_qs = Question.objects.filter(
         category__slug=category_slug, 
         level=level
     ).order_by('?')[:10]
     
     data = []
-    for q in questions:
-        options = []
-        for opt in q.options.all():
-            options.append({
+    for q in questions_qs:
+        # Sabai options tanne
+        opts_qs = list(q.options.all())
+        # Backend mai randomize garne
+        random.shuffle(opts_qs) 
+        
+        options_data = []
+        for opt in opts_qs:
+            options_data.append({
                 'text': opt.text,
                 'is_correct': opt.is_correct
             })
         
         data.append({
             'question': q.text,
-            'options': options
+            'options': options_data
         })
     
     return JsonResponse({'questions': data})
