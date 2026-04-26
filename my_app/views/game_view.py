@@ -64,7 +64,6 @@ def quiz_view(request, category_slug):
     return render(request, 'games/quiz_page.html', {'category': category})
 
 def get_quiz_questions(request, category_slug, level):
-    # Questions fetch garne
     questions_qs = Question.objects.filter(
         category__slug=category_slug, 
         level=level
@@ -72,9 +71,7 @@ def get_quiz_questions(request, category_slug, level):
     
     data = []
     for q in questions_qs:
-        # Sabai options tanne
         opts_qs = list(q.options.all())
-        # Backend mai randomize garne
         random.shuffle(opts_qs) 
         
         options_data = []
