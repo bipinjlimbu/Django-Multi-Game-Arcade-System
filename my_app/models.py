@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.text import slugify
 
 # Create your models here.
 class Game(models.Model):
@@ -26,3 +27,38 @@ class Leaderboard(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.game}: {self.score}"
+
+class QuizCategory(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True, blank=True)
+    icon = models.CharField(max_length=50, default='help-circle')
+    color = models.CharField(max_length=20, default='blue')
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+class Question(models.Model):
+    LEVEL_CHOICES = [
+        (1, 'Easy'),
+        (2, 'Medium'),
+        (3, 'Hard'),
+    ]
+    category = models.ForeignKey(QuizCategory, on_delete=models.CASCADE, related_name='questions')
+    level = models.IntegerField(choices=LEVEL_CHOICES, default=1)
+    text = models.TextField()
+
+    def __str__(self):
+        return f"[{self.category.name} - Lvl {self.level}] {self.text[:50]}"
+
+class Option(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
+    text = models.CharField(max_length=255)
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.text} ({'Correct' if self.is_correct else 'Wrong'})"
