@@ -43,6 +43,9 @@
             
             {% for game in games %}
             <a href="/games/{{ game.slug }}/" class="game-card p-8 rounded-[2rem] flex flex-col items-center text-center">
+
+                <div class="hidden bg-green-50 text-green-500 bg-orange-50 text-orange-500 bg-purple-50 text-purple-500 border-orange-500 border-purple-500"></div>
+
                 <div class="w-20 h-20 bg-{{ game.color|default:'blue' }}-50 text-{{ game.color|default:'blue' }}-600 rounded-[1.5rem] flex items-center justify-center mb-6 transition-colors group-hover:bg-blue-600 group-hover:text-white">
                     <i data-lucide="{{ game.icon|default:'gamepad-2' }}" class="w-12 h-12"></i>
                 </div>
