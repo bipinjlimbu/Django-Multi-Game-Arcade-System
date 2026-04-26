@@ -25,7 +25,7 @@ def save_score(request):
                     leaderboard.score = score
                     leaderboard.save()
                     
-                elif game.name == 'Reaction Game' and score > leaderboard.score:
+                elif (game.name == 'Reaction Game' or game.name == 'Math Challenge') and score > leaderboard.score:
                     leaderboard.score = score
                     leaderboard.save()
 
