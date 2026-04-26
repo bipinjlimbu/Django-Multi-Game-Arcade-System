@@ -24,19 +24,31 @@ def save_score(request):
             category = data.get('category')
             game = Game.objects.get(slug=slug)
             
-            if not Leaderboard.objects.filter(user = request.user, game=game).exists():
-                leaderboard = Leaderboard.objects.create(user=request.user, score=score, game=game)
-                leaderboard.save()
-                
+            if game.slug == 'quiz':
+                quiz_category = QuizCategory.objects.get(slug=category)
+                if not Leaderboard.objects.filter(user=request.user, game=game, quiz_category=quiz_category).exists():
+                    leaderboard = Leaderboard.objects.create(user=request.user, score=score, game=game, quiz_category=quiz_category)
+                    leaderboard.save()
+                else:
+                    leaderboard = Leaderboard.objects.get(user=request.user, game=game, quiz_category=quiz_category)
+                    if score > leaderboard.score:
+                        leaderboard.score = score
+                        leaderboard.save()
+                        
             else:
-                leaderboard = Leaderboard.objects.get(user=request.user, game=game)
-                if (game.name == 'Number Guess' or game.name == 'Memory Game') and score < leaderboard.score:
-                    leaderboard.score = score
+                if not Leaderboard.objects.filter(user = request.user, game=game).exists():
+                    leaderboard = Leaderboard.objects.create(user=request.user, score=score, game=game)
                     leaderboard.save()
                     
-                elif (game.name == 'Reaction Game' or game.name == 'Math Challenge') and score > leaderboard.score:
-                    leaderboard.score = score
-                    leaderboard.save()
+                else:
+                    leaderboard = Leaderboard.objects.get(user=request.user, game=game)
+                    if (game.name == 'Number Guess' or game.name == 'Memory Game') and score < leaderboard.score:
+                        leaderboard.score = score
+                        leaderboard.save()
+                        
+                    elif (game.name == 'Reaction Game' or game.name == 'Math Challenge') and score > leaderboard.score:
+                        leaderboard.score = score
+                        leaderboard.save()
 
             messages.success(request, 'Your score has been saved to the leaderboard!')
             return redirect(f'/games/{slug}/')
