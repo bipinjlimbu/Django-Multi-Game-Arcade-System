@@ -20,5 +20,8 @@ def leaderboard_view(request, game_slug):
     elif game.name == 'Reaction Game' or game.name == 'Math Challenge':
         players = Leaderboard.objects.filter(game=game).order_by('-score')
         
+    elif game.slug == 'quiz':
+        return render(request, 'main/quiz_leaderboard_page.html', {'game': game})
+        
     return render(request, 'main/leaderboard_page.html', {'game': game, 'players': players})
     
