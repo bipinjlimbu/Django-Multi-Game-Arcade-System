@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from ..models import Leaderboard, Game
+from ..models import Leaderboard, Game, QuizCategory
 
 def home_view(request):
     return render(request, 'main/home_page.html')
@@ -21,7 +21,8 @@ def leaderboard_view(request, game_slug):
         players = Leaderboard.objects.filter(game=game).order_by('-score')
         
     elif game.slug == 'quiz':
-        return render(request, 'main/quiz_leaderboard_page.html', {'game': game})
+        categories = QuizCategory.objects.all()
+        return render(request, 'main/quiz_leaderboard_page.html', {'categories': categories})
         
     return render(request, 'main/leaderboard_page.html', {'game': game, 'players': players})
     
