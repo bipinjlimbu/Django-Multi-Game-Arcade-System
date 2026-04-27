@@ -44,11 +44,11 @@ def save_score(request):
                     
                 else:
                     leaderboard = Leaderboard.objects.get(user=request.user, game=game)
-                    if (game.name == 'Number Guess' or game.name == 'Memory Game') and score < leaderboard.score:
+                    if (game.slug == 'number-guess' or game.slug == 'memory-game') and score < leaderboard.score:
                         leaderboard.score = score
                         leaderboard.save()
                         
-                    elif (game.name == 'Reaction Game' or game.name == 'Math Challenge' or game.name == 'Arrow Defense' or game.name == 'Whack A Mole') and score > leaderboard.score:
+                    elif (game.slug == 'reaction-game' or game.slug == 'math-challenge' or game.slug == 'arrow-defense' or game.slug == 'whack-a-mole') and score > leaderboard.score:
                         leaderboard.score = score
                         leaderboard.save()
 
