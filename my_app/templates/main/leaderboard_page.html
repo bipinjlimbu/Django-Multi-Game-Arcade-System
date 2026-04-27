@@ -6,27 +6,44 @@
     <style>
         body {
             background-image: url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=2070&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            margin: 0;
+            background-size: cover; background-position: center; background-attachment: fixed; margin: 0;
         }
         .leaderboard-card {
             background-color: #ffffff;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
             border: 6px solid #f8fafc;
         }
-        /* table-fixed use garepachhi column width control garna milchha */
+
+        /* --- Scroll Logic Starts Here --- */
+        .table-container {
+            max-height: 500px; /* Search height customize garna saknu hunchha */
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f8fafc;
+        }
+
+        /* Webkit browsers (Chrome, Safari) ko lagi scrollbar appearance */
+        .table-container::-webkit-scrollbar { width: 6px; }
+        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
         table { border-collapse: separate; border-spacing: 0 10px; width: 100%; table-layout: fixed; }
         
+        /* Sticky Header Logic */
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #ffffff; /* Header ko background solid hunuparchha scroll huda overlap huna nadina */
+        }
+
         th { 
             text-transform: uppercase; 
             font-size: 0.75rem; 
             font-weight: 900; 
             color: #94a3b8; 
-            padding: 1rem;
+            padding: 1.5rem 1rem;
             letter-spacing: 0.15em;
-            text-align: center; /* Center align headers */
+            text-align: center;
         }
         
         td { 
@@ -34,25 +51,18 @@
             background-color: #fcfcfc; 
             border-top: 1px solid #f1f5f9;
             border-bottom: 1px solid #f1f5f9;
-            text-align: center; /* Center align cell data */
+            text-align: center;
             vertical-align: middle;
         }
 
         tr:hover td { background-color: #f1f5f9; border-color: #e2e8f0; }
         
-        /* Rounded corners remain same */
         td:first-child { border-left: 1px solid #f1f5f9; border-top-left-radius: 1.5rem; border-bottom-left-radius: 1.5rem; }
         td:last-child { border-right: 1px solid #f1f5f9; border-top-right-radius: 1.5rem; border-bottom-right-radius: 1.5rem; }
 
         .rank-badge {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            font-weight: 900;
-            margin: 0 auto; /* Horizontally centers the badge inside cell */
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; font-weight: 900; margin: 0 auto;
         }
         
         .gold { background: linear-gradient(135deg, #fef08a, #eab308); color: #854d0e; }
@@ -66,14 +76,14 @@
 
     <div class="leaderboard-card w-full max-w-5xl rounded-[3.5rem] p-8 md:p-16">
         
-        <div class="text-center mb-14">
+        <div class="text-center mb-10">
             <h1 class="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter uppercase italic">
                 {{ game.name }}
             </h1>
             <p class="text-blue-600 font-black tracking-[0.3em] uppercase mt-2">Rankings Table</p>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="table-container">
             <table class="min-w-[700px]">
                 <thead>
                     <tr>
