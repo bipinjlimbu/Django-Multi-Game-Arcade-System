@@ -15,29 +15,26 @@
         input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
 
-        /* End Screen Overlay */
+        /* Level Transition Overlay - Thapeko yaha ho */
+        #level-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none;
+            flex-direction: column; align-items: center; justify-content: center; z-index: 200;
+        }
+        .level-text { font-size: 5rem; font-weight: 900; font-style: italic; color: #f59e0b; text-shadow: 0 0 30px rgba(245, 158, 11, 0.4); }
+
         #end-screen {
-            display: none; position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 100; flex-direction: column;
-            align-items: center; justify-content: center;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px);
+            z-index: 100; flex-direction: column; align-items: center; justify-content: center;
             opacity: 0; transition: opacity 0.5s ease;
         }
         #end-screen.active { display: flex; opacity: 1; }
 
-        .btn-game {
-            width: 220px; padding: 12px; margin: 8px; border-radius: 8px;
-            font-weight: 800; text-transform: uppercase; cursor: pointer; text-decoration: none; text-align: center;
-        }
+        .btn-game { width: 220px; padding: 12px; margin: 8px; border-radius: 8px; font-weight: 800; text-transform: uppercase; cursor: pointer; text-decoration: none; text-align: center; }
         .btn-primary { background: #f59e0b; color: white; border: none; }
         .btn-outline { background: transparent; color: white; border: 2px solid #334155; }
 
-        .answer-input {
-            background: rgba(255, 255, 255, 0.05); border: 2px solid #334155;
-            outline: none; transition: all 0.2s;
-        }
+        .answer-input { background: rgba(255, 255, 255, 0.05); border: 2px solid #334155; outline: none; transition: all 0.2s; }
         .answer-input:focus { border-color: #f59e0b; background: rgba(255, 255, 255, 0.1); }
 
         .shake { animation: shake 0.4s both; }
@@ -49,10 +46,7 @@
         }
 
         .minus-point { color: #ef4444; animation: fadeUp 0.8s ease-out forwards; position: absolute; font-weight: bold; font-size: 1.5rem; }
-        @keyframes fadeUp {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-40px); }
-        }
+        @keyframes fadeUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-40px); } }
     </style>
 </head>
 
@@ -76,12 +70,16 @@
     </div>
 
     <div id="game-card" class="bg-slate-900/50 p-10 rounded-3xl border border-slate-800 shadow-2xl text-center max-w-md w-full backdrop-blur-sm">
-        <div id="problem" class="text-6xl font-black mb-8 text-white tracking-tighter min-h-[90px] flex items-center justify-center">0 + 0</div>
+        <div id="problem" class="text-6xl font-black mb-8 text-white tracking-tighter min-h-[90px] flex items-center justify-center">---</div>
         <input type="number" id="answer" class="answer-input w-full text-5xl p-5 rounded-2xl text-center font-black" placeholder="?" autofocus autocomplete="off">
         <div class="mt-6 flex justify-between items-center text-[10px] uppercase font-bold tracking-widest text-slate-500">
             <span>Level Timer: <span id="level-timer" class="text-white">30</span>s</span>
             <span id="scoring-rules" class="text-blue-400">+5 / -2</span>
         </div>
+    </div>
+
+    <div id="level-overlay">
+        <div id="lvl-title" class="level-text">LEVEL 1 BEGINS</div>
     </div>
 
     <div id="end-screen">
@@ -102,12 +100,9 @@
         const scoringRules = document.getElementById('scoring-rules');
         const endScreen = document.getElementById('end-screen');
         const finalScoreSpan = document.getElementById('final-score-display');
+        const overlay = document.getElementById('level-overlay');
 
-        let score = 0;
-        let currentLevel = 1; 
-        let timeLeft = 30;    
-        let currentAnswer = 0;
-        let gameActive = true;
+        let score = 0, currentLevel = 1, timeLeft = 30, currentAnswer = 0, gameActive = false;
 
         const rules = {
             1: { add: 5, sub: 2, label: "Easy", color: "text-green-500" },
@@ -115,56 +110,50 @@
             3: { add: 15, sub: 6, label: "Hard", color: "text-red-500" }
         };
 
+        function showLevelTransition(lvl) {
+            gameActive = false;
+            answerInput.disabled = true;
+            answerInput.value = "";
+            problemEl.innerText = "---";
+            
+            document.getElementById('lvl-title').innerText = `LEVEL ${lvl} BEGINS`;
+            overlay.style.display = 'flex';
+
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                gameActive = true;
+                answerInput.disabled = false;
+                answerInput.focus();
+                generateProblem();
+            }, 2000);
+        }
+
         function generateProblem() {
             let n1, n2, n3, op1, op2;
-            
             if (currentLevel === 1) { 
-                // Easy: Add/Sub only (1-30)
-                n1 = Math.floor(Math.random() * 30) + 1;
-                n2 = Math.floor(Math.random() * 30) + 1;
+                n1 = Math.floor(Math.random() * 30) + 1; n2 = Math.floor(Math.random() * 30) + 1;
                 op1 = Math.random() > 0.5 ? '+' : '-';
                 if (op1 === '-' && n1 < n2) [n1, n2] = [n2, n1];
-                
                 problemEl.innerText = `${n1} ${op1 === '-' ? '−' : '+'} ${n2}`;
                 currentAnswer = eval(`${n1} ${op1} ${n2}`);
-            } 
-            else if (currentLevel === 2) { 
-                // Medium: Multiplication Only (2-12)
-                n1 = Math.floor(Math.random() * 11) + 2;
-                n2 = Math.floor(Math.random() * 11) + 2;
-                
+            } else if (currentLevel === 2) { 
+                n1 = Math.floor(Math.random() * 11) + 2; n2 = Math.floor(Math.random() * 11) + 2;
                 problemEl.innerText = `${n1} × ${n2}`;
                 currentAnswer = n1 * n2;
-            } 
-            else { 
-                // Hard: 12 * 2 + 13 type
-                n1 = Math.floor(Math.random() * 12) + 2;
-                n2 = Math.floor(Math.random() * 9) + 2;
-                n3 = Math.floor(Math.random() * 40) + 5;
-                op1 = '*';
+            } else { 
+                n1 = Math.floor(Math.random() * 12) + 2; n2 = Math.floor(Math.random() * 9) + 2; n3 = Math.floor(Math.random() * 40) + 5;
                 op2 = Math.random() > 0.5 ? '+' : '-';
-                
                 let intermediate = n1 * n2;
                 if (op2 === '-' && intermediate < n3) op2 = '+'; 
                 currentAnswer = op2 === '+' ? (intermediate + n3) : (intermediate - n3);
-                
                 problemEl.innerText = `${n1} × ${n2} ${op2 === '+' ? '+' : '−'} ${n3}`;
             }
-        }
-
-        function showDeduction(amt) {
-            const float = document.createElement('div');
-            float.className = 'minus-point';
-            float.innerText = `-${amt}`;
-            document.getElementById('score-float-container').appendChild(float);
-            setTimeout(() => float.remove(), 800);
         }
 
         answerInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && gameActive) {
                 const userAns = parseInt(answerInput.value);
                 const currentRule = rules[currentLevel];
-
                 if (userAns === currentAnswer) {
                     score += currentRule.add;
                     scoreEl.innerText = score;
@@ -181,6 +170,14 @@
             }
         });
 
+        function showDeduction(amt) {
+            const float = document.createElement('div');
+            float.className = 'minus-point';
+            float.innerText = `-${amt}`;
+            document.getElementById('score-float-container').appendChild(float);
+            setTimeout(() => float.remove(), 800);
+        }
+
         const gameTimer = setInterval(() => {
             if (!gameActive) return;
             timeLeft--;
@@ -195,7 +192,7 @@
                     levelIndicator.innerText = `Level: ${nextRule.label}`;
                     levelIndicator.className = `font-black uppercase tracking-[0.2em] mb-2 text-xl ${nextRule.color}`;
                     scoringRules.innerText = `+${nextRule.add} / -${nextRule.sub}`;
-                    generateProblem();
+                    showLevelTransition(currentLevel);
                 } else {
                     clearInterval(gameTimer);
                     endGame();
@@ -214,7 +211,8 @@
             }).then(() => setTimeout(() => endScreen.classList.add('active'), 500));
         }
 
-        generateProblem();
+        // Initialize Level 1
+        showLevelTransition(1);
     </script>
 </body>
 </html>
