@@ -20,6 +20,7 @@
         .timer-bar { transition: width 0.2s linear; }
         .disabled { pointer-events: none; }
 
+        /* Level Overlay logic - Countdown numbers removed as requested */
         #level-overlay, #end-screen {
             position: absolute; inset: 0; background: rgba(255, 255, 255, 0.98);
             display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -40,9 +41,9 @@
         
         <div id="level-overlay">
             <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-xs mb-2">Challenge Upgraded</p>
-            <h1 id="next-level-title" class="text-5xl font-black text-slate-900 uppercase italic mb-8">Next Level</h1>
+            <h1 id="next-level-title" class="text-5xl font-black text-slate-900 uppercase italic mb-8">Level 1 Begins</h1>
             <div class="w-20 h-20 rounded-full border-8 border-blue-600 flex items-center justify-center">
-                <span id="countdown-text" class="text-3xl font-black text-blue-600">3</span>
+                <span class="text-2xl font-black text-blue-600">GO!</span>
             </div>
         </div>
 
@@ -52,9 +53,8 @@
                 <h1 class="text-6xl font-black text-slate-900 italic mb-4">FINISH!</h1>
                 <p class="text-slate-500 font-bold text-lg">Final Score: <span id="final-score-display" class="text-blue-600 text-3xl ml-1">0</span></p>
             </div>
-            
             <div class="flex flex-col gap-5">
-                <a href="/leaderboard/quiz/?category={{ category.slug }}/" class="btn-action bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-100">
+                <a href="/leaderboard/quiz/?category={{ category.slug }}" class="btn-action bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-100">
                     <i data-lucide="trophy" class="w-6 h-6"></i> View Leaderboard
                 </a>
                 <a href="/games/" class="btn-action bg-slate-900 text-white hover:bg-black">
@@ -96,22 +96,13 @@
             </h1>
             <div id="options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
-
-        <div class="mt-12 pt-6 border-t border-slate-50">
-            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Arcade Engine v2.0</p>
-        </div>
     </div>
 
     <script src="{% static 'js/lucide.min.js' %}"></script>
     <script>
         lucide.createIcons();
 
-        let currentLevel = 1;
-        let questions = [];
-        let currentIndex = 0;
-        let totalScore = 0;
-        let timerInterval = null;
-        let timeLeft = 15;
+        let currentLevel = 1, questions = [], currentIndex = 0, totalScore = 0, timerInterval = null, timeLeft = 15, gameActive = false;
         const pointsConfig = { 1: 5, 2: 10, 3: 15 };
 
         async function fetchQuestions() {
@@ -121,15 +112,12 @@
                 questions = data.questions;
                 currentIndex = 0;
                 loadQuestion();
-            } catch (err) { console.error("Error fetching data, Sir."); }
+            } catch (err) { console.error("Error fetching data."); }
         }
 
         function loadQuestion() {
             stopTimer();
-            if (currentIndex >= questions.length) {
-                handleLevelProgression();
-                return;
-            }
+            if (currentIndex >= questions.length) { handleLevelProgression(); return; }
 
             const fb = document.getElementById('feedback-text');
             fb.classList.add('invisible');
@@ -143,7 +131,7 @@
             grid.innerHTML = '';
 
             q.options.forEach((opt, index) => {
-                const label = String.fromCharCode(65 + index);
+                const label = String.fromCharCode(65 + index); // A, B, C, D firta aayo
                 const card = document.createElement('div');
                 card.className = 'option-card p-6 rounded-2xl font-bold text-slate-700 flex items-center justify-between group';
                 card.dataset.correct = opt.is_correct;
@@ -153,7 +141,7 @@
                         <span>${opt.text}</span>
                     </div>
                 `;
-                card.onclick = () => checkAnswer(card, opt.is_correct);
+                card.onclick = () => { if(gameActive) checkAnswer(card, opt.is_correct); };
                 grid.appendChild(card);
             });
             startTimer();
@@ -187,8 +175,7 @@
             timeLeft = 15;
             updateTimerUI();
             timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerUI();
+                timeLeft--; updateTimerUI();
                 if (timeLeft <= 0) { 
                     stopTimer(); 
                     document.getElementById('feedback-text').innerText = "⌛ Time Up!";
@@ -214,57 +201,41 @@
         }
 
         function handleLevelProgression() {
-            if (currentLevel < 3) {
-                currentLevel++;
-                startLevelTransition();
-            } else {
-                saveFinalScoreAndEnd();
-            }
+            if (currentLevel < 3) { currentLevel++; startLevelTransition(); }
+            else { saveFinalScoreAndEnd(); }
         }
 
         function startLevelTransition() {
+            gameActive = false;
             const overlay = document.getElementById('level-overlay');
-            const countText = document.getElementById('countdown-text');
-            document.getElementById('next-level-title').innerText = currentLevel === 2 ? "Medium Mode" : "Hard Mode";
+            const title = document.getElementById('next-level-title');
+            const badge = document.getElementById('level-badge');
+            
+            title.innerText = `Level ${currentLevel} Begins`;
             overlay.style.display = 'flex';
             
-            let count = 3;
-            countText.innerText = count;
-            let countInt = setInterval(() => {
-                count--;
-                countText.innerText = count;
-                if (count <= 0) {
-                    clearInterval(countInt);
-                    overlay.style.display = 'none';
-                    document.getElementById('level-badge').innerText = `Level ${currentLevel}: ${currentLevel == 2 ? 'Medium' : 'Hard'}`;
-                    fetchQuestions();
-                }
-            }, 1000);
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                badge.innerText = `Level ${currentLevel}: ${currentLevel == 2 ? 'Medium' : 'Hard'}`;
+                gameActive = true;
+                fetchQuestions();
+            }, 2000);
         }
 
         function saveFinalScoreAndEnd() {
             stopTimer();
-            const endScreen = document.getElementById('end-screen');
             document.getElementById('final-score-display').innerText = totalScore;
-
             fetch('/save-score/', {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'X-CSRFToken': '{{ csrf_token }}' 
-                },
-                body: JSON.stringify({ 
-                    slug: 'quiz', 
-                    category: '{{ category.slug }}', 
-                    score: totalScore 
-                })
-            }).then(() => {
-                endScreen.style.display = 'flex';
-                lucide.createIcons();
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify({ slug: 'quiz', category: '{{ category.slug }}', score: totalScore })
+            }).then(() => { 
+                document.getElementById('end-screen').style.display = 'flex'; 
+                lucide.createIcons(); 
             });
         }
 
-        fetchQuestions();
+        startLevelTransition();
     </script>
 </body>
 </html>
