@@ -24,6 +24,8 @@ def save_score(request):
             category = data.get('category')
             game = Game.objects.get(slug=slug)
             
+            print(f"Received score: {score} for game: {slug} and category: {category} from user: {request.user.username}")
+            
             if game.slug == 'quiz':
                 quiz_category = QuizCategory.objects.get(slug=category)
                 if not Leaderboard.objects.filter(user=request.user, game=game, quiz_category=quiz_category).exists():
@@ -46,7 +48,7 @@ def save_score(request):
                         leaderboard.score = score
                         leaderboard.save()
                         
-                    elif (game.name == 'Reaction Game' or game.name == 'Math Challenge') and score > leaderboard.score:
+                    elif (game.name == 'Reaction Game' or game.name == 'Math Challenge' or game.name == 'Arrow Defense') and score > leaderboard.score:
                         leaderboard.score = score
                         leaderboard.save()
 
