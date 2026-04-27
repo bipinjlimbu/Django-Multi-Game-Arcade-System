@@ -5,7 +5,6 @@
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
     <style>
         body { background-color: #0f172a; margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; color: white; user-select: none; }
-        
         .arena-top { 
             height: 25vh; width: 100%; position: relative; 
             background: linear-gradient(to bottom, #0f172a, #1e293b); 
@@ -14,60 +13,28 @@
         }
         .game-title { margin-top: 15px; font-size: 1.8rem; font-weight: 900; color: #fbbf24; letter-spacing: 3px; }
         .top-line { display: flex; gap: 40px; margin-top: 5px; font-weight: 800; font-size: 1.2rem; }
-        
-        #timer-text { 
-            position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); 
-            font-size: 4rem; font-weight: 900; color: #ef4444; 
-            font-family: monospace; text-shadow: 0 0 20px rgba(239,68,68,0.4); 
-        }
+        #timer-text { position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; font-weight: 900; color: #ef4444; font-family: monospace; }
 
         .game-area { height: 75vh; display: flex; align-items: center; justify-content: center; background: #020617; position: relative; }
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
-        
-        .hole {
-            width: 130px; height: 130px; background: #1e293b; border: 4px solid #334155;
-            border-radius: 50%; position: relative; overflow: hidden;
-            box-shadow: inset 0 10px 20px rgba(0,0,0,0.8);
-        }
+        .hole { width: 130px; height: 130px; background: #1e293b; border: 4px solid #334155; border-radius: 50%; position: relative; overflow: hidden; box-shadow: inset 0 10px 20px rgba(0,0,0,0.8); }
 
-        .mole {
-            width: 100%; height: 100%; position: absolute; top: 100%;
-            display: flex; align-items: center; justify-content: center;
-            transition: top 0.12s ease-out; cursor: pointer; border-radius: 50%;
-            z-index: 10;
-        }
+        .mole { width: 100%; height: 100%; position: absolute; top: 100%; display: flex; align-items: center; justify-content: center; transition: top 0.12s ease-out; cursor: pointer; border-radius: 50%; z-index: 10; }
         .mole.active { top: 10%; }
-
         .mole[data-type="mole"] { background: #d97706; border: 4px solid #a16207; }
         .mole[data-type="bomb"] { background: #ef4444; border: 4px solid #991b1b; }
         .mole[data-type="golden"] { background: #facc15; border: 4px solid #ca8a04; box-shadow: 0 0 20px #facc15; }
-        
         .face { font-size: 2rem; font-weight: bold; pointer-events: none; color: rgba(0,0,0,0.7); }
 
-        .floating-score {
-            position: absolute; pointer-events: none; font-weight: 900;
-            font-size: 2rem; animation: floatUp 0.6s ease-out forwards; z-index: 100;
-        }
-        @keyframes floatUp {
-            0% { transform: translate(-50%, 0); opacity: 1; }
-            100% { transform: translate(-50%, -80px); opacity: 0; }
-        }
+        .floating-score { position: absolute; pointer-events: none; font-weight: 900; font-size: 2rem; animation: floatUp 0.6s ease-out forwards; z-index: 100; }
+        @keyframes floatUp { 0% { transform: translate(-50%, 0); opacity: 1; } 100% { transform: translate(-50%, -80px); opacity: 0; } }
 
-        /* End Screen Buttons */
         .btn-group { display: flex; flex-direction: column; gap: 12px; width: 220px; }
-        .btn-end {
-            padding: 12px; border: none; border-radius: 8px; font-weight: 900; 
-            cursor: pointer; font-size: 1rem; text-align: center; text-decoration: none;
-        }
-        .btn-blue { background: #2563eb; color: white; }
-        .btn-yellow { background: #fbbf24; color: #1e293b; }
-        .btn-gray { background: #475569; color: white; }
+        .btn-end { padding: 12px; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; font-size: 1rem; text-align: center; text-decoration: none; display: block; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-outline { background: transparent; color: white; border: 2px solid #334155; }
 
-        #level-overlay, #end-screen {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95); 
-            display: none; flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 300;
-        }
+        #level-overlay, #end-screen { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 300; }
     </style>
 </head>
 <body>
@@ -81,7 +48,7 @@
         <div id="timer-text">30.00s</div>
     </div>
 
-    <div class="game-area" id="game-area">
+    <div class="game-area">
         <div class="grid">
             <div class="hole"><div class="mole" onmousedown="whack(event)"></div></div>
             <div class="hole"><div class="mole" onmousedown="whack(event)"></div></div>
@@ -98,13 +65,12 @@
     <div id="level-overlay"><h1 id="lvl-title" style="font-size: 5rem; font-style: italic; color:#fbbf24">LEVEL 1 BEGINS</h1></div>
 
     <div id="end-screen">
-        <h2 style="font-size: 4rem; font-weight: 900; margin-bottom: 5px;">GAME OVER</h2>
+        <h2 style="font-size: 4rem; font-weight: 900;">GAME OVER</h2>
         <p style="font-size: 1.5rem; color:#94a3b8; margin-bottom: 25px;">Final Score: <span id="final-score-display" style="color:white">0</span></p>
-        
         <div class="btn-group">
-            <button onclick="location.reload()" class="btn-end btn-blue">TRY AGAIN</button>
-            <a href="/leaderboard/" class="btn-end btn-yellow">LEADERBOARD</a>
-            <button onclick="window.history.back()" class="btn-end btn-gray">GO BACK</button>
+            <button onclick="location.reload()" class="btn-end btn-primary">Try Again</button>
+            <a href="/leaderboard/whack-a-mole/" class="btn-end btn-outline">Leaderboard</a>
+            <a href="/games/" class="btn-end btn-outline">Go Back</a>
         </div>
     </div>
 
@@ -112,6 +78,7 @@
         let score = 0, level = 1, gameActive = false, timeLeft = 30.00;
         let gameTimer, moleTimer, lastHole;
 
+        // Scoring based on level
         const scoreConfig = {
             1: { mole: 5, bomb: -10, golden: 20 },
             2: { mole: 10, bomb: -20, golden: 30 },
@@ -141,7 +108,6 @@
 
             const mole = moles[idx];
             const rand = Math.random();
-            
             if (rand < 0.2) { mole.dataset.type = 'bomb'; mole.innerHTML = '<span class="face">X_X</span>'; }
             else if (rand < 0.35) { mole.dataset.type = 'golden'; mole.innerHTML = '<span class="face">$_$</span>'; }
             else { mole.dataset.type = 'mole'; mole.innerHTML = '<span class="face">O_O</span>'; }
@@ -161,15 +127,11 @@
             mole.classList.remove('active');
 
             const type = mole.dataset.type;
-            let p = 0; let color = "#fbbf24";
-            const currentPoints = scoreConfig[level];
+            const config = scoreConfig[level];
+            let p = type === 'bomb' ? config.bomb : (type === 'golden' ? config.golden : config.mole);
+            let color = type === 'bomb' ? "#ef4444" : (type === 'golden' ? "#facc15" : "#fbbf24");
 
-            if (type === 'bomb') { p = currentPoints.bomb; color = "#ef4444"; }
-            else if (type === 'golden') { p = currentPoints.golden; color = "#facc15"; }
-            else { p = currentPoints.mole; color = "#fbbf24"; }
-
-            score += p;
-            if (score < 0) score = 0;
+            score = Math.max(0, score + p);
             document.getElementById('score').innerText = score;
 
             const float = document.createElement('div');
@@ -204,6 +166,16 @@
             gameActive = false;
             document.getElementById('final-score-display').innerText = score;
             document.getElementById('end-screen').style.display = 'flex';
+            
+            // Arrow Defense wala Save-Score Logic
+            fetch('/save-score/', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-CSRFToken': '{{ csrf_token }}' 
+                },
+                body: JSON.stringify({ score: score, slug: 'whack-a-mole' })
+            });
         }
 
         window.onload = () => showLevelTransition(1);
