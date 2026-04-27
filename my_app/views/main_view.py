@@ -21,7 +21,7 @@ def leaderboard_view(request, game_slug):
         players = Leaderboard.objects.filter(game=game).order_by('-score')
         
     elif game.slug == 'quiz':
-        category_slug = request.GET.get('category')
+        category_slug = request.GET.get('category') if request.GET.get('category') else None
         if category_slug:
             category = QuizCategory.objects.get(slug=category_slug)
             players = Leaderboard.objects.filter(game=game, quiz_category=category).order_by('-score')
