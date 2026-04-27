@@ -5,18 +5,32 @@
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
     <style>
         body { background-color: #0f172a; margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; color: white; }
-        .arena { height: 65vh; width: 100%; position: relative; background: linear-gradient(to bottom, #0f172a, #1e293b); border-bottom: 8px solid #000; display: flex; flex-direction: column; align-items: center; }
-        .game-title { margin-top: 15px; font-size: 2.2rem; font-weight: 900; color: #fbbf24; letter-spacing: 4px; }
-        .top-stats { display: flex; gap: 40px; margin-top: 5px; font-weight: 800; font-size: 1.2rem; }
-        #word-box { position: absolute; top: 400px; font-size: 4.5rem; font-weight: 900; color: rgba(255,255,255,0.12); text-transform: uppercase; letter-spacing: 12px; pointer-events: none; }
+        .arena { height: 60vh; width: 100%; position: relative; background: linear-gradient(to bottom, #0f172a, #1e293b); border-bottom: 8px solid #000; display: flex; flex-direction: column; align-items: center; }
+        .game-title { margin-top: 10px; font-size: 2rem; font-weight: 900; color: #fbbf24; letter-spacing: 3px; }
         
-        /* HP System */
-        .hp-bar-container { position: absolute; top: -35px; left: 50%; transform: translateX(-50%); width: 60px; height: 8px; background: #475569; border-radius: 4px; border: 1px solid white; }
+        .top-line { display: flex; gap: 40px; margin-top: 5px; font-weight: 800; font-size: 1.3rem; z-index: 10; }
+        #timer-text { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); font-size: 3.8rem; font-weight: 900; color: #ef4444; font-family: monospace; text-shadow: 0 0 20px rgba(239,68,68,0.4); z-index: 1; }
+        #word-box { position: absolute; bottom: 30px; font-size: 4.5rem; font-weight: 900; color: rgba(255,255,255,0.12); text-transform: uppercase; letter-spacing: 12px; pointer-events: none; }
+
+        .blast { position: absolute; width: 4px; height: 4px; border-radius: 50%; pointer-events: none; z-index: 60; }
+
+        #level-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none;
+            flex-direction: column; align-items: center; justify-content: center; z-index: 200;
+        }
+        .level-text { font-size: 5rem; font-weight: 900; font-style: italic; color: #fbbf24; }
+
+        @keyframes drawBow { 0% { transform: scaleX(1); } 50% { transform: scaleX(1.4) translateX(-5px); } 100% { transform: scaleX(1); } }
+        .drawing .bow-curve { animation: drawBow 0.4s ease-in-out; }
+        
+        /* Player HP Bar stays */
+        .hp-bar-container { position: absolute; top: -35px; left: 50%; transform: translateX(-50%); width: 60px; height: 8px; background: #475569; border: 1px solid white; }
         .hp-fill { height: 100%; width: 100%; transition: 0.3s; }
         
-        /* Stickman Styles */
         .stickman { position: absolute; bottom: 0px; width: 80px; height: 120px; z-index: 5; }
-        #player { left: 10%; } #enemy { right: 10%; transform: scaleX(-1); }
+        #player { left: 10%; } 
+        #enemy { right: 10%; transform: scaleX(-1); }
+        
         .head { width: 24px; height: 24px; border: 3px solid white; border-radius: 50%; position: absolute; top: 0; left: 28px; }
         .torso { width: 3px; height: 45px; background: white; position: absolute; top: 24px; left: 38.5px; }
         .arm { width: 35px; height: 3px; background: white; position: absolute; top: 35px; transform-origin: left; }
@@ -28,40 +42,24 @@
         .arrow { position: absolute; width: 45px; height: 4px; border-radius: 2px; z-index: 50; bottom: 85px; }
         .e-arrow { background: #ef4444; } .p-arrow { background: #22c55e; }
         
-        .ui-panel { height: 35vh; background: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .ui-panel { height: 40vh; background: #ffffff; display: flex; align-items: center; justify-content: center; }
         #input-field { width: 85%; max-width: 500px; padding: 22px; border: 6px solid #f1f5f9; border-radius: 25px; font-size: 2.5rem; font-weight: 900; text-align: center; outline: none; color: #1e293b; }
 
-        /* UPGRADED END SCREEN (BSDK style) */
-        #end-screen {
-            display: none; position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(8px);
-            z-index: 100; flex-direction: column; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.5s ease;
-        }
-        #end-screen.active { display: flex; opacity: 1; }
-        
-        .btn-game { width: 220px; padding: 12px; margin: 8px; border-radius: 8px; font-weight: 800; text-transform: uppercase; transition: 0.2s; text-align: center; cursor: pointer; text-decoration: none; display: inline-block; }
+        #end-screen { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); z-index: 300; flex-direction: column; align-items: center; justify-content: center; }
+        .btn-game { width: 220px; padding: 12px; margin: 8px; border-radius: 8px; font-weight: 800; cursor: pointer; text-align: center; text-decoration: none; }
         .btn-primary { background: #2563eb; color: white; border: none; }
-        .btn-primary:hover { transform: translateY(-2px); background: #1d4ed8; }
         .btn-outline { background: transparent; color: white; border: 2px solid #334155; }
-        .btn-outline:hover { background: #334155; transform: translateY(-2px); }
-
-        /* Particle Explosion */
-        .particle { position: fixed; width: 8px; height: 8px; pointer-events: none; z-index: 110; border-radius: 50%; }
-        @keyframes explode {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
-        }
     </style>
 </head>
-<body class="min-h-screen">
+<body>
 
     <div class="arena">
         <div class="game-title">ARROW DEFENSE</div>
-        <div class="top-stats">
+        <div class="top-line">
             <div>SCORE: <span id="score" style="color:#fbbf24">0</span></div>
             <div>LEVEL: <span id="lvl-display" style="color:#fbbf24">1</span></div>
         </div>
+        <div id="timer-text">30.00s</div>
         <div id="word-box">---</div>
         
         <div id="player" class="stickman">
@@ -72,7 +70,6 @@
         </div>
 
         <div id="enemy" class="stickman">
-            <div class="hp-bar-container"><div id="e-hp-fill" class="hp-fill" style="background:#ef4444"></div></div>
             <div class="bow-curve" style="border-color:#ef4444"></div><div class="head" style="border-color:#ef4444"></div><div class="torso" style="background:#ef4444"></div>
             <div class="arm arm-top" style="background:#ef4444"></div><div class="arm arm-bottom" style="background:#ef4444"></div>
             <div class="leg leg-left" style="background:#ef4444"></div><div class="leg leg-right" style="background:#ef4444"></div>
@@ -83,10 +80,13 @@
         <input type="text" id="input-field" placeholder="TYPE TO SHOOT..." autocomplete="off">
     </div>
 
+    <div id="level-overlay">
+        <div id="lvl-title" class="level-text">LEVEL 1 BEGINS</div>
+    </div>
+
     <div id="end-screen">
         <h2 id="status-display" class="text-6xl font-black italic mb-2">COMPLETE!</h2>
-        <p class="text-slate-400 mb-8 font-mono text-xl">Final Score: <span id="final-score-display" class="text-white">0</span></p>
-        
+        <p style="font-size: 1.5rem; color:#94a3b8; margin-bottom: 20px;">Final Score: <span id="final-score-display" style="color:white">0</span></p>
         <button onclick="location.reload()" class="btn-game btn-primary">Try Again</button>
         <a href="/leaderboard/arrow-defense/" class="btn-game btn-outline">Leaderboard</a>
         <a href="/games/" class="btn-game btn-outline">Go Back</a>
@@ -94,60 +94,150 @@
 
     <script>
         const wordBank = {
-            1: ['CAT', 'DOG', 'SQL', 'WEB', 'API'],
-            2: ['DJANGO', 'PYTHON', 'SELECT', 'SERVER'],
-            3: ['DATABASE', 'FRAMEWORK', 'FRONTEND', 'BACKEND']
+            1: ['CAT', 'DOG', 'SQL', 'WEB', 'API', 'RUN', 'WIN', 'URL', 'KEY', 'TAG', 'GET', 'SET', 'LOG', 'MAP', 'DEV', 'APP', 'NET', 'CSS', 'GIT', 'ZIP'],
+            2: ['DJANGO', 'PYTHON', 'SELECT', 'UPDATE', 'DELETE', 'SERVER', 'CODING', 'SCRIPT', 'OBJECT', 'MODELS', 'RENDER', 'MOBILE', 'BRANCH', 'COMMIT', 'SYSTEM', 'ACTIVE', 'LAYOUT', 'HEADER', 'FOOTER', 'ACTION'],
+            3: ['DATABASE', 'FRAMEWORK', 'FRONTEND', 'TERMINAL', 'INTERFACE', 'FUNCTION', 'VARIABLE', 'ENDPOINTS', 'MIGRATION', 'AUTHENTIC', 'CONTAINER', 'DEPLOYMENT', 'ALGORITHM', 'RECURSION', 'VALIDATE']
         };
 
-        let score = 0, hp = 100, level = 1, gameActive = true, currentWord = '', currentEnemyArrow = null;
+        let score = 0, hp = 100, level = 1, gameActive = false;
+        let currentWord = '', lastWord = '', currentEnemyArrow = null, isShooting = false;
+        let timeLeft = 30.00, gameTimer;
+
         const input = document.getElementById('input-field');
         const wordBox = document.getElementById('word-box');
-        const endScreen = document.getElementById('end-screen');
+        const timerDisplay = document.getElementById('timer-text');
+        const overlay = document.getElementById('level-overlay');
+
+        function showLevelTransition(lvl) {
+            gameActive = false;
+            clearInterval(gameTimer);
+            if (currentEnemyArrow) {
+                clearInterval(currentEnemyArrow.move);
+                currentEnemyArrow.el.remove();
+                currentEnemyArrow = null;
+            }
+            input.disabled = true;
+            input.value = "";
+            wordBox.innerText = "---";
+            
+            document.getElementById('lvl-title').innerText = `LEVEL ${lvl} BEGINS`;
+            overlay.style.display = 'flex';
+
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                gameActive = true;
+                input.disabled = false;
+                input.focus();
+                startTimer();
+                nextTurn();
+            }, 2000);
+        }
+
+        function startTimer() {
+            clearInterval(gameTimer);
+            gameTimer = setInterval(() => {
+                if (!gameActive) return;
+                timeLeft -= 0.01;
+                if (timeLeft <= 0) {
+                    if (level < 3) {
+                        level++;
+                        timeLeft = 30.00;
+                        document.getElementById('lvl-display').innerText = level;
+                        showLevelTransition(level);
+                    } else {
+                        endGame("GAME COMPLETE!");
+                    }
+                }
+                timerDisplay.innerText = Math.max(0, timeLeft).toFixed(2) + 's';
+            }, 10);
+        }
+
+        function spawnBlast(x, y, color) {
+            for (let i = 0; i < 20; i++) {
+                const b = document.createElement('div');
+                b.className = 'blast';
+                b.style.left = x + '%';
+                b.style.bottom = y + 'px';
+                b.style.backgroundColor = color;
+                document.querySelector('.arena').appendChild(b);
+                const tx = (Math.random() - 0.5) * 150;
+                const ty = (Math.random() - 0.5) * 150;
+                b.animate([
+                    { transform: 'translate(0, 0) scale(1.5)', opacity: 1 },
+                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                ], { duration: 600, easing: 'ease-out' }).onfinish = () => b.remove();
+            }
+        }
 
         function nextTurn() {
             if (!gameActive) return;
+            isShooting = false;
             const list = wordBank[level];
-            currentWord = list[Math.floor(Math.random() * list.length)];
+            let nextWord;
+            do { nextWord = list[Math.floor(Math.random() * list.length)]; } while (nextWord === lastWord);
+            currentWord = nextWord; lastWord = currentWord;
             wordBox.innerText = currentWord;
             input.value = '';
-            document.getElementById('enemy').classList.add('draw-bow');
-            setTimeout(() => { if(gameActive) spawnEnemyArrow(); }, 400);
+            
+            document.getElementById('enemy').classList.remove('drawing');
+            void document.getElementById('enemy').offsetWidth; 
+            document.getElementById('enemy').classList.add('drawing');
+            
+            setTimeout(() => { if(gameActive && !isShooting) spawnEnemyArrow(); }, 400);
         }
 
         function spawnEnemyArrow() {
+            if (currentEnemyArrow || !gameActive) return;
             const el = document.createElement('div');
             el.className = 'arrow e-arrow'; el.style.right = '15%';
             document.querySelector('.arena').appendChild(el);
             let pos = 15;
             const move = setInterval(() => {
-                if (!gameActive) { clearInterval(move); el.remove(); return; }
-                pos += 0.6; el.style.right = pos + '%';
-                if (pos >= 85) { clearInterval(move); el.remove(); takeDamage(); nextTurn(); }
+                if (!gameActive || isShooting) { clearInterval(move); el.remove(); return; }
+                pos += 0.5; // Halka Slowed Speed
+                el.style.right = pos + '%';
+                if (pos >= 85) { 
+                    clearInterval(move); el.remove(); 
+                    currentEnemyArrow = null;
+                    spawnBlast(15, 85, '#ef4444');
+                    takeDamage(); nextTurn(); 
+                }
             }, 20);
             currentEnemyArrow = { el, move };
         }
 
         function playerShoot() {
-            const el = document.createElement('div');
-            el.className = 'arrow p-arrow'; el.style.left = '15%';
-            document.querySelector('.arena').appendChild(el);
-            let pPos = 15;
-            const pMove = setInterval(() => {
-                pPos += 4; el.style.left = pPos + '%';
-                if (currentEnemyArrow && pPos >= (100 - parseFloat(currentEnemyArrow.el.style.right)) - 3) {
-                    clearInterval(pMove); clearInterval(currentEnemyArrow.move);
-                    el.remove(); currentEnemyArrow.el.remove(); currentEnemyArrow = null;
-                    score += (level === 1 ? 5 : level === 2 ? 10 : 15);
-                    document.getElementById('score').innerText = score;
-                    if(score % 50 === 0 && level < 3) { level++; document.getElementById('lvl-display').innerText = level; }
-                    setTimeout(nextTurn, 400);
-                }
-                if (pPos >= 100) { clearInterval(pMove); el.remove(); }
-            }, 10);
+            if (isShooting || !gameActive) return;
+            isShooting = true;
+            document.getElementById('player').classList.add('drawing');
+
+            setTimeout(() => {
+                const el = document.createElement('div');
+                el.className = 'arrow p-arrow'; el.style.left = '15%';
+                document.querySelector('.arena').appendChild(el);
+                let pPos = 15;
+                const pMove = setInterval(() => {
+                    pPos += 5; el.style.left = pPos + '%';
+                    
+                    if (currentEnemyArrow && pPos >= (100 - parseFloat(currentEnemyArrow.el.style.right)) - 3) {
+                        clearInterval(pMove); clearInterval(currentEnemyArrow.move);
+                        const blastX = pPos;
+                        el.remove(); currentEnemyArrow.el.remove(); currentEnemyArrow = null;
+                        
+                        spawnBlast(blastX, 85, '#fbbf24');
+                        
+                        score += (level === 1 ? 5 : level === 2 ? 10 : 15);
+                        document.getElementById('score').innerText = score;
+                        document.getElementById('player').classList.remove('drawing');
+                        setTimeout(nextTurn, 400);
+                    }
+                    if (pPos >= 100) { clearInterval(pMove); el.remove(); isShooting = false; document.getElementById('player').classList.remove('drawing'); }
+                }, 10);
+            }, 100);
         }
 
         input.addEventListener('input', () => {
-            if (input.value.trim().toUpperCase() === currentWord) playerShoot();
+            if (input.value.trim().toUpperCase() === currentWord && !isShooting && gameActive) playerShoot();
         });
 
         function takeDamage() {
@@ -155,42 +245,21 @@
             if (hp <= 0) endGame("DEFEATED");
         }
 
-        function createParticles() {
-            for (let i = 0; i < 40; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle';
-                p.style.left = '50%'; p.style.top = '50%';
-                p.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
-                p.style.setProperty('--tx', (Math.random() - 0.5) * 600 + 'px');
-                p.style.setProperty('--ty', (Math.random() - 0.5) * 600 + 'px');
-                p.style.animation = `explode ${0.5 + Math.random()}s forwards ease-out`;
-                document.body.appendChild(p);
-                setTimeout(() => p.remove(), 1000);
-            }
-        }
-
         function endGame(msg) {
-            gameActive = false;
-            createParticles();
+            gameActive = false; clearInterval(gameTimer);
+            document.getElementById('status-display').innerText = msg;
+            document.getElementById('status-display').style.color = (msg === "DEFEATED") ? "#ef4444" : "#10b981";
+            document.getElementById('final-score-display').innerText = score;
+            document.getElementById('end-screen').style.display = 'flex';
             
-            // Backend ma score save garne
             fetch('/save-score/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
                 body: JSON.stringify({ score: score, slug: 'arrow-defense' })
-            })
-            .then(res => {
-                setTimeout(() => {
-                    document.getElementById('status-display').innerText = msg;
-                    document.getElementById('status-display').style.color = msg === "DEFEATED" ? "#ef4444" : "#10b981";
-                    document.getElementById('final-score-display').innerText = score;
-                    endScreen.classList.add('active');
-                }, 800);
             });
         }
 
-        nextTurn();
-        input.focus();
+        showLevelTransition(1);
     </script>
 </body>
 </html>
