@@ -1,0 +1,87 @@
+<html>
+<head>
+    <title>Arcade | Quiz Categories</title>
+    {% load static %}
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <style>
+        body {
+            background-image: linear-gradient(rgba(2, 6, 23, 0.85), rgba(2, 6, 23, 0.85)), 
+                              url('https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=2070');
+            background-size: cover; background-position: center; background-attachment: fixed; margin: 0;
+        }
+
+        .main-container { background-color: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+
+        .category-card {
+            background-color: #ffffff;
+            border: 2px solid #f1f5f9;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; text-decoration: none;
+        }
+
+        /* Hover: Border dynamic color fix */
+        .category-card:hover {
+            transform: translateX(10px);
+            border-color: var(--hover-color) !important;
+            background-color: #fcfcfc;
+        }
+
+        .icon-box { transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+        /* Hover interactions */
+        .category-card:hover .icon-box {
+            background-color: var(--hover-color) !important;
+            color: #ffffff !important;
+        }
+        .category-card:hover h3 { color: var(--hover-color) !important; }
+    </style>
+</head>
+
+<body class="min-h-screen p-6 md:p-12 flex items-center justify-center font-sans text-slate-900">
+
+    <div class="main-container w-full max-w-2xl rounded-[2.5rem] p-8 md:p-12 border border-white/20">
+        
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-black text-slate-900 tracking-tight mb-1 uppercase italic">Quiz Rankings</h1>
+            <p class="text-blue-600 font-bold text-[10px] uppercase tracking-[0.2em]">Select Category</p>
+            <div class="h-1.5 w-16 bg-blue-600 mx-auto rounded-full mt-3"></div>
+        </div>
+
+        <div class="flex flex-col gap-4">
+            {% for cat in categories %}
+            <a href="?category={{ cat.slug }}" 
+               class="category-card p-5 rounded-3xl gap-6 group"
+               style="--hover-color: {{ cat.color }};">
+                
+                <div class="icon-box w-14 h-14 rounded-2xl" 
+                     style="background-color: {{ cat.color }}20; color: {{ cat.color }};">
+                    <i data-lucide="{{ cat.icon|default:'layout-grid' }}" class="w-7 h-7"></i>
+                </div>
+                
+                <div class="flex-grow text-left">
+                    <h3 class="text-xl font-black text-slate-800 transition-colors leading-tight">
+                        {{ cat.name }}
+                    </h3>
+                    <p class="text-slate-400 font-bold text-[10px] uppercase tracking-wider">
+                        View Hall of Fame
+                    </p>
+                </div>
+
+                <div class="text-slate-200">
+                    <i data-lucide="chevron-right" class="w-5 h-5 group-hover:translate-x-1 group-hover:text-slate-900 transition-all"></i>
+                </div>
+            </a>
+            {% endfor %}
+
+            <div class="mt-8 pt-6 border-t border-slate-100 text-center">
+                <a href="/leaderboard/" class="inline-flex items-center gap-2 text-slate-400 hover:text-blue-600 transition-all font-black uppercase tracking-widest text-[10px] no-underline">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Main
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/lucide.min.js' %}"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>
