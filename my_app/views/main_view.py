@@ -14,10 +14,10 @@ def leaderboard_selection_view(request):
 
 def leaderboard_view(request, game_slug):
     game = Game.objects.get(slug=game_slug)
-    if game.name == 'Number Guess' or game.name == 'Memory Game':
+    if game.slug == 'number-guess' or game.slug == 'memory-game':
         players = Leaderboard.objects.filter(game=game).order_by('score')
         
-    elif game.name == 'Reaction Game' or game.name == 'Math Challenge' or game.name == 'Arrow Defense' or game.name == 'Whack A Mole':
+    elif game.slug == 'reaction-game' or game.slug == 'math-challenge' or game.slug == 'arrow-defense' or game.slug == 'whack-a-mole':
         players = Leaderboard.objects.filter(game=game).order_by('-score')
         
     elif game.slug == 'quiz':
