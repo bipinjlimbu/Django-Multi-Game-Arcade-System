@@ -1,0 +1,207 @@
+<html>
+<head>
+    <title>Arcade | Memory Flash</title>
+    {% load static %}
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <style>
+        :root { --neon-yellow: #fbbf24; --neon-red: #ef4444; --neon-green: #22c55e; --bg-dark: #020617; }
+        
+        body { background-color: var(--bg-dark); margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; color: white; display: flex; flex-direction: column; }
+        
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        .arena { 
+            height: 65vh; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            position: relative; background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+            border-bottom: 2px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .header-ui { position: absolute; top: 20px; width: 90%; display: flex; justify-content: space-between; align-items: center; }
+        .score-badge { background: rgba(251, 191, 36, 0.1); padding: 8px 20px; border-radius: 20px; border: 1px solid var(--neon-yellow); font-weight: 900; color: var(--neon-yellow); }
+        
+        .lives-container { display: flex; gap: 8px; font-size: 1.5rem; color: var(--neon-red); text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+
+        #display-box { 
+            font-size: 8rem; font-weight: 900; color: #fbbf24; 
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+            letter-spacing: 10px; transition: all 0.2s;
+        }
+
+        .timer-circle {
+            position: absolute; width: 340px; height: 340px; border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center;
+        }
+        .progress-ring {
+            position: absolute; width: 100%; height: 100%; border-radius: 50%;
+            border: 4px solid transparent; border-top-color: var(--neon-red);
+            transition: transform linear; transform: rotate(0deg);
+        }
+
+        .ui-panel { 
+            height: 35vh; background: #0f172a; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        #input-field { 
+            width: 80%; max-width: 450px; background: rgba(255,255,255,0.03); 
+            border: 2px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 25px;
+            font-size: 3rem; font-weight: 900; text-align: center; color: white; outline: none;
+        }
+        #input-field:focus { border-color: var(--neon-yellow); }
+
+        #end-screen { 
+            display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.98); 
+            z-index: 500; flex-direction: column; align-items: center; justify-content: center; 
+            backdrop-filter: blur(10px);
+        }
+        .btn-group { display: flex; flex-direction: column; gap: 15px; width: 250px; }
+        .btn-game { padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; text-decoration: none; text-align: center; border: none; text-transform: uppercase; }
+        .btn-primary { background: var(--neon-yellow); color: #000; }
+        .btn-outline { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.2); }
+        
+        .shake { animation: shake 0.4s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-12px); }
+            75% { transform: translateX(12px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="arena">
+        <div class="header-ui">
+            <div style="font-weight: 900; letter-spacing: 2px; color: #64748b;">MEMORY FLASH</div>
+            <div id="lives-display" class="lives-container">❤❤❤</div>
+            <div class="score-badge">PTS: <span id="score-val">0</span></div>
+        </div>
+
+        <div class="timer-circle">
+            <div id="progress-ring" class="progress-ring"></div>
+            <div id="display-box">GO!</div>
+        </div>
+    </div>
+
+    <div class="ui-panel">
+        <p id="hint-text" style="color: #64748b; margin-bottom: 10px; font-weight: 600;">SYSTEM READY...</p>
+        <input type="number" id="input-field" autocomplete="off" placeholder="????" disabled>
+    </div>
+
+    <div id="end-screen">
+        <h2 style="font-size: 5rem; font-weight: 900; color: var(--neon-red); margin-bottom: 0;">TERMINATED</h2>
+        <p style="font-size: 1.5rem; color:#94a3b8; margin-bottom: 30px;">Score: <span id="final-score" style="color:white">0</span></p>
+        <div class="btn-group">
+            <button onclick="location.reload()" class="btn-game btn-primary">TRY AGAIN</button>
+            <a href="/leaderboard/memory-flash-number/" class="btn-game btn-outline">LEADERBOARD</a>
+            <a href="/games/" class="btn-game btn-outline">QUIT</a>
+        </div>
+    </div>
+
+    <script>
+        let score = 0, lives = 3, currentNumber = "";
+        let roundInLength = 0, currentLength = 3;
+        let isRepeat = false;
+
+        const displayBox = document.getElementById('display-box');
+        const inputField = document.getElementById('input-field');
+        const ring = document.getElementById('progress-ring');
+        const hint = document.getElementById('hint-text');
+        const livesDisplay = document.getElementById('lives-display');
+
+        function updateLivesUI() {
+            livesDisplay.innerText = "❤".repeat(lives);
+        }
+
+        function startRound() {
+            inputField.value = "";
+            inputField.disabled = true;
+            hint.innerText = isRepeat ? "TRY AGAIN..." : "MEMORIZING...";
+            hint.style.color = isRepeat ? "#ef4444" : "#fbbf24";
+            
+            if (!isRepeat) {
+                currentNumber = "";
+                for(let i=0; i < currentLength; i++) {
+                    currentNumber += Math.floor(Math.random() * 10);
+                }
+            }
+
+            displayBox.innerText = currentNumber;
+            displayBox.style.color = "#fbbf24";
+            
+            // Speed logic: faster as digits increase
+            let duration = Math.max(500, 2500 - (currentLength * 200));
+            
+            ring.style.transition = "none";
+            ring.style.transform = "rotate(0deg)";
+            
+            setTimeout(() => {
+                ring.style.transition = `transform ${duration}ms linear`;
+                ring.style.transform = "rotate(360deg)";
+            }, 50);
+
+            setTimeout(() => {
+                displayBox.innerText = "????";
+                inputField.disabled = false;
+                inputField.focus();
+                hint.innerText = `ENTER ${currentLength} DIGITS`;
+                hint.style.color = "#64748b";
+            }, duration);
+        }
+
+        inputField.addEventListener('keyup', (e) => {
+            if (e.key === "Enter") {
+                if (inputField.value === currentNumber) {
+                    // Correct logic
+                    let pointsToAdd = (currentLength - 2) * 5;
+                    score += pointsToAdd;
+                    document.getElementById('score-val').innerText = score;
+                    
+                    displayBox.innerText = "CORRECT";
+                    displayBox.style.color = "#22c55e";
+                    
+                    isRepeat = false;
+                    roundInLength++;
+                    if (roundInLength >= 2) {
+                        currentLength++;
+                        roundInLength = 0;
+                    }
+
+                    setTimeout(startRound, 800);
+                } else {
+                    // Incorrect logic
+                    lives--;
+                    updateLivesUI();
+                    document.body.classList.add('shake');
+                    setTimeout(() => document.body.classList.remove('shake'), 400);
+
+                    if (lives <= 0) {
+                        endGame();
+                    } else {
+                        isRepeat = true;
+                        displayBox.innerText = "WRONG";
+                        displayBox.style.color = "#ef4444";
+                        setTimeout(startRound, 1000);
+                    }
+                }
+            }
+        });
+
+        function endGame() {
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('end-screen').style.display = 'flex';
+            
+            fetch('/save-score/', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-CSRFToken': '{{ csrf_token }}' 
+                },
+                body: JSON.stringify({ score: score, slug: 'memory-flash-number' })
+            });
+        }
+
+        setTimeout(startRound, 1500);
+    </script>
+</body>
+</html>
