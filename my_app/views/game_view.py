@@ -48,7 +48,7 @@ def save_score(request):
                         leaderboard.score = score
                         leaderboard.save()
                         
-                    elif (game.slug == 'reaction-game' or game.slug == 'math-challenge' or game.slug == 'arrow-defense' or game.slug == 'whack-a-mole' or game.slug == 'memory-flash-number') and score > leaderboard.score:
+                    elif (game.slug == 'reaction-game' or game.slug == 'math-challenge' or game.slug == 'arrow-defense' or game.slug == 'whack-a-mole' or game.slug == 'memory-flash-number' or game.slug == 'odd-one-out') and score > leaderboard.score:
                         leaderboard.score = score
                         leaderboard.save()
 
