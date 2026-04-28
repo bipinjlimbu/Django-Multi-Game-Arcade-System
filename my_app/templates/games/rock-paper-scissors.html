@@ -1,0 +1,191 @@
+<html>
+<head>
+    <title>Arcade | Rock Paper Scissors</title>
+    {% load static %}
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <style>
+        :root { --neon-blue: #6366f1; --neon-red: #ef4444; --bg-dark: #000000; --gold: #FFD700; }
+        body { background-color: var(--bg-dark); margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; color: white; height: 100vh; display: flex; flex-direction: column; }
+
+        .top-ui { position: absolute; top: 40px; text-align: center; width: 100%; }
+        .game-title { color: var(--gold); font-size: 2.5rem; font-weight: 900; letter-spacing: 4px; margin: 0; text-transform: uppercase; }
+        
+        .score-board { display: flex; justify-content: center; gap: 40px; margin-top: 20px; }
+        .score-box { text-align: center; background: rgba(255,255,255,0.05); padding: 10px 25px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); min-width: 80px; }
+        .pts-display { font-size: 1.5rem; font-weight: 800; color: var(--gold); margin-top: 15px; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+
+        .battle-zone { flex: 1; display: flex; align-items: center; justify-content: center; gap: 60px; }
+        .hand-icon { font-size: 8rem; transition: transform 0.2s; }
+        
+        .ui-panel { height: 35vh; background: #0f172a; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; border-top: 2px solid var(--neon-blue); }
+        .controls { display: flex; gap: 20px; }
+        .btn-choice { 
+            width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--neon-blue); 
+            background: rgba(99, 102, 241, 0.1); color: white; font-size: 2.5rem; cursor: pointer; 
+            transition: 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-choice:hover:not(:disabled) { background: var(--neon-blue); transform: translateY(-5px); }
+        .btn-choice:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        #result-text { font-size: 1.8rem; font-weight: 900; color: var(--neon-blue); text-transform: uppercase; min-height: 2.2rem; }
+
+        .shaking { animation: shakeHand 0.4s ease-in-out 3; }
+        @keyframes shakeHand {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-30px); }
+        }
+
+        /* End Screen UI */
+        #end-screen { 
+            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.98); 
+            z-index: 1000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+        }
+        .btn-group { display: flex; flex-direction: column; gap: 15px; width: 250px; margin-top: 20px; }
+        .btn-game { padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; text-decoration: none; text-align: center; border: none; text-transform: uppercase; transition: 0.3s; }
+        .btn-primary { background: var(--gold); color: #000; }
+        .btn-outline { background: transparent; color: white; border: 2px solid #334155; }
+        .btn-outline:hover { background: rgba(255,255,255,0.05); border-color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="top-ui">
+        <h1 class="game-title">ROCK PAPER SCISSORS</h1>
+        <div class="score-board">
+            <div class="score-box"><small style="color: #64748b;">YOU</small><div id="p-wins" style="font-size: 2.5rem; font-weight: 900; color: #22c55e;">0</div></div>
+            <div class="score-box"><small style="color: #64748b;">CPU</small><div id="c-wins" style="font-size: 2.5rem; font-weight: 900; color: var(--neon-red);">0</div></div>
+        </div>
+        <div class="pts-display">TOTAL PTS: <span id="total-pts">0</span></div>
+    </div>
+
+    <div class="battle-zone">
+        <div id="p-hand" class="hand-icon">✊</div>
+        <div style="font-size: 2.5rem; font-weight: 900; color: #1e293b;">VS</div>
+        <div id="c-hand" class="hand-icon" style="transform: scaleX(-1);">✊</div>
+    </div>
+
+    <div class="ui-panel">
+        <div id="result-text">CHOOSE WEAPON</div>
+        <div class="controls">
+            <button class="btn-choice" onclick="play('rock')">✊</button>
+            <button class="btn-choice" onclick="play('paper')">✋</button>
+            <button class="btn-choice" onclick="play('scissors')">✌</button>
+        </div>
+        <div style="font-weight: 800; color: #64748b; letter-spacing: 1px;">BEST OF 7 (FIRST TO 4)</div>
+    </div>
+
+    <div id="end-screen">
+        <h2 id="final-msg" style="font-size: 4rem; font-weight: 900; color: var(--gold); margin-bottom: 0;">MATCH OVER</h2>
+        <p style="font-size: 1.5rem; color: #94a3b8; margin-bottom: 10px;">Final Score: <span id="final-pts" style="color:white; font-weight: 900;">0</span></p>
+        <p id="match-stats" style="color: #64748b; font-weight: 600; margin-bottom: 20px;"></p>
+        
+        <div class="btn-group">
+            <button onclick="location.reload()" class="btn-game btn-primary">REMATCH</button>
+            <a href="/leaderboard/rock-paper-scissors/" class="btn-game btn-outline">LEADERBOARD</a>
+            <a href="/games/" class="btn-game btn-outline">QUIT</a>
+        </div>
+    </div>
+
+    <script>
+        let pScore = 0, cScore = 0, totalPts = 0;
+        let isPlaying = false;
+        const hands = { rock: '✊', paper: '✋', scissors: '✌' };
+
+        function play(pChoice) {
+            if (isPlaying) return;
+            isPlaying = true;
+            document.querySelectorAll('.btn-choice').forEach(b => b.disabled = true);
+
+            const pHandUI = document.getElementById('p-hand');
+            const cHandUI = document.getElementById('c-hand');
+            
+            pHandUI.innerText = '✊'; 
+            cHandUI.innerText = '✊';
+            
+            pHandUI.classList.add('shaking'); 
+            cHandUI.classList.add('shaking');
+            document.getElementById('result-text').innerText = "SHAKING...";
+
+            setTimeout(() => {
+                pHandUI.classList.remove('shaking');
+                cHandUI.classList.remove('shaking');
+
+                const choices = ['rock', 'paper', 'scissors'];
+                const cChoice = choices[Math.floor(Math.random() * 3)];
+
+                pHandUI.innerText = hands[pChoice];
+                cHandUI.innerText = hands[cChoice];
+
+                const winner = getWinner(pChoice, cChoice);
+                const resEl = document.getElementById('result-text');
+
+                if (winner === 'player') {
+                    pScore++; 
+                    totalPts += 10;
+                    resEl.innerText = "POINT FOR YOU!";
+                    resEl.style.color = "#22c55e";
+                } else if (winner === 'cpu') {
+                    cScore++; 
+                    totalPts = Math.max(0, totalPts - 5);
+                    resEl.innerText = "POINT FOR CPU!";
+                    resEl.style.color = "var(--neon-red)";
+                } else {
+                    resEl.innerText = "IT'S A TIE!";
+                    resEl.style.color = "#64748b";
+                }
+
+                document.getElementById('p-wins').innerText = pScore;
+                document.getElementById('c-wins').innerText = cScore;
+                document.getElementById('total-pts').innerText = totalPts;
+
+                if (pScore === 4 || cScore === 4) {
+                    if (pScore === 4) {
+                        let remainingRounds = 7 - (pScore + cScore);
+                        if (remainingRounds > 0) {
+                            totalPts += (remainingRounds * 10);
+                        }
+                    } else {
+                        // User match haryo bhane overall score 0 pathaune
+                        totalPts = 0;
+                    }
+                    setTimeout(endGame, 1000);
+                } else {
+                    setTimeout(() => {
+                        isPlaying = false;
+                        document.querySelectorAll('.btn-choice').forEach(b => b.disabled = false);
+                        resEl.innerText = "CHOOSE AGAIN";
+                        resEl.style.color = "var(--neon-blue)";
+                    }, 800);
+                }
+            }, 1200);
+        }
+
+        function getWinner(p, c) {
+            if (p === c) return 'tie';
+            if ((p === 'rock' && c === 'scissors') || (p === 'paper' && c === 'rock') || (p === 'scissors' && c === 'paper')) return 'player';
+            return 'cpu';
+        }
+
+        function endGame() {
+            const won = pScore >= 4;
+            document.getElementById('final-msg').innerText = won ? "VICTORY" : "DEFEAT";
+            document.getElementById('final-msg').style.color = won ? "#FFD700" : "#ef4444";
+            document.getElementById('final-pts').innerText = totalPts;
+            document.getElementById('match-stats').innerText = `Match Score: ${pScore} - ${cScore}`;
+            document.getElementById('end-screen').style.display = 'flex';
+
+            fetch('/save-score/', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-CSRFToken': '{{ csrf_token }}' 
+                },
+                body: JSON.stringify({ 
+                    score: totalPts, 
+                    slug: 'rock-paper-scissors' 
+                })
+            });
+        }
+    </script>
+</body>
+</html>
