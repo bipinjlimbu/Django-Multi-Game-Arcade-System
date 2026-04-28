@@ -1,0 +1,159 @@
+<html>
+<head>
+    <title>Arcade | Odd One Out</title>
+    {% load static %}
+    <link href="{ % static 'css/styles.css' % }" rel="stylesheet" />
+    <style>
+        :root { --gold: #FFD700; --pure-black: #000000; }
+        body { background-color: var(--pure-black); margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; color: white; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+        .top-ui { position: absolute; top: 40px; text-align: center; width: 100%; }
+        .game-title { color: var(--gold); font-size: 3rem; font-weight: 900; letter-spacing: 4px; margin: 0; text-transform: uppercase; }
+        .stats-bar { display: flex; justify-content: center; gap: 30px; margin-top: 15px; }
+        .stat-item { font-size: 1.2rem; font-weight: 700; color: #94a3b8; }
+        .stat-val { color: white; }
+
+        .grid-container {
+            display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+            gap: 12px; width: 380px; height: 380px; margin-top: 50px;
+        }
+        .color-block { border-radius: 8px; cursor: pointer; transition: transform 0.1s; }
+        .color-block:active { transform: scale(0.92); }
+
+        #end-screen { 
+            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.98); 
+            z-index: 1000; flex-direction: column; align-items: center; justify-content: center; 
+        }
+        .btn-group { display: flex; flex-direction: column; gap: 15px; width: 250px; }
+        .btn-game { padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; text-decoration: none; text-align: center; border: none; text-transform: uppercase; }
+        .btn-primary { background: var(--gold); color: #000; }
+        .btn-outline { background: transparent; color: white; border: 2px solid #334155; }
+
+        .shake { animation: shake 0.4s ease-in-out; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+    </style>
+</head>
+<body>
+
+    <div class="top-ui">
+        <h1 class="game-title">ODD ONE OUT</h1>
+        <div class="stats-bar">
+            <div class="stat-item">SCORE: <span id="score-val" class="stat-val">0</span></div>
+            <div class="stat-item">ROUND: <span id="round-val" class="stat-val">1</span>/21</div>
+            <div class="stat-item">LVL: <span id="lvl-display" style="color: var(--gold);">1</span></div>
+        </div>
+    </div>
+
+    <div class="grid-container" id="game-grid"></div>
+
+    <div id="end-screen">
+        <h2 style="font-size: 4rem; font-weight: 900; color: var(--gold); margin-bottom: 10px;">COMPLETED</h2>
+        <p style="font-size: 1.5rem; color: #94a3b8; margin-bottom: 30px;">Final Score: <span id="final-score" style="color:white">0</span></p>
+        <div class="btn-group">
+            <button onclick="location.reload()" class="btn-game btn-primary">TRY AGAIN</button>
+            <a href="/leaderboard/odd-one-out/" class="btn-game btn-outline">LEADERBOARD</a>
+            <a href="/games/" class="btn-game btn-outline">QUIT</a>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let roundsPlayed = 0; // Current round index
+        let currentTier = 1;
+
+        const grid = document.getElementById('game-grid');
+        const scoreVal = document.getElementById('score-val');
+        const roundVal = document.getElementById('round-val');
+        const lvlDisplay = document.getElementById('lvl-display');
+
+        function generateLevel() {
+            if (roundsPlayed >= 21) {
+                endGame();
+                return;
+            }
+
+            grid.innerHTML = '';
+            roundVal.innerText = roundsPlayed + 1;
+
+            // Tier & Scoring Logic
+            if (roundsPlayed < 7) {
+                currentTier = 1;
+                lvlDisplay.innerText = "1";
+            } else if (roundsPlayed < 14) {
+                currentTier = 2;
+                lvlDisplay.innerText = "2";
+            } else {
+                currentTier = 3;
+                lvlDisplay.innerText = "3";
+            }
+
+            // Color Generation
+            const r = Math.floor(Math.random() * 180) + 40;
+            const g = Math.floor(Math.random() * 180) + 40;
+            const b = Math.floor(Math.random() * 180) + 40;
+            const baseColor = `rgb(${r}, ${g}, ${b})`;
+
+            // Difficulty (Difference)
+            let diff = currentTier === 1 ? 40 : currentTier === 2 ? 22 : 12;
+            
+            const isBrighter = Math.random() > 0.5;
+            const oddR = isBrighter ? Math.min(255, r + diff) : Math.max(0, r - diff);
+            const oddG = isBrighter ? Math.min(255, g + diff) : Math.max(0, g - diff);
+            const oddB = isBrighter ? Math.min(255, b + diff) : Math.max(0, b - diff);
+            const oddColor = `rgb(${oddR}, ${oddG}, ${oddB})`;
+
+            const oddIndex = Math.floor(Math.random() * 9);
+
+            for (let i = 0; i < 9; i++) {
+                const block = document.createElement('div');
+                block.classList.add('color-block');
+                block.style.backgroundColor = (i === oddIndex) ? oddColor : baseColor;
+                
+                block.onclick = () => {
+                    if (i === oddIndex) {
+                        handleAnswer(true);
+                    } else {
+                        handleAnswer(false);
+                    }
+                };
+                grid.appendChild(block);
+            }
+        }
+
+        function handleAnswer(isCorrect) {
+            if (isCorrect) {
+                if (currentTier === 1) score += 5;
+                else if (currentTier === 2) score += 10;
+                else score += 15;
+            } else {
+                if (currentTier === 1) score = Math.max(0, score - 2);
+                else if (currentTier === 2) score = Math.max(0, score - 4);
+                else score = Math.max(0, score - 6);
+                
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 400);
+            }
+
+            roundsPlayed++;
+            scoreVal.innerText = score;
+            generateLevel();
+        }
+
+        function endGame() {
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('end-screen').style.display = 'flex';
+
+            fetch('/save-score/', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-CSRFToken': '{{ csrf_token }}' 
+                },
+                body: JSON.stringify({ score: score, slug: 'odd-one-out' })
+            });
+        }
+
+        generateLevel();
+    </script>
+</body>
+</html>
