@@ -17,7 +17,7 @@ def leaderboard_view(request, game_slug):
     if game.slug == 'number-guess' or game.slug == 'memory-game':
         players = Leaderboard.objects.filter(game=game).order_by('score')
         
-    elif game.slug == 'reaction-game' or game.slug == 'math-challenge' or game.slug == 'arrow-defense' or game.slug == 'whack-a-mole' or game.slug == 'memory-flash-number' or game.slug == 'odd-one-out':
+    elif game.slug == 'reaction-game' or game.slug == 'math-challenge' or game.slug == 'arrow-defense' or game.slug == 'whack-a-mole' or game.slug == 'memory-flash-number' or game.slug == 'odd-one-out' or game.slug == 'rock-paper-scissors':
         players = Leaderboard.objects.filter(game=game).order_by('-score')
         
     elif game.slug == 'quiz':
