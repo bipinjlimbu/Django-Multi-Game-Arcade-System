@@ -1,0 +1,19 @@
+<div id="toast-container" class="fixed top-5 right-5 z-[100] flex flex-col gap-3">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="toast-item translate-x-full opacity-0 transition-all duration-500 ease-out bg-slate-900 border-l-4 
+                {% if message.tags == 'success' %}border-orange-500{% else %}border-red-500{% endif %} 
+                text-white p-4 rounded shadow-2xl min-w-[300px] relative overflow-hidden"
+                 data-type="{{ message.tags }}">
+                
+                <div class="flex items-center gap-3">
+                    <i data-lucide="{% if message.tags == 'success' %}check-circle{% else %}alert-circle{% endif %}" class="w-5 h-5 text-orange-500"></i>
+                    <p class="text-sm font-bold">{{ message }}</p>
+                </div>
+
+                <!-- Time Bar -->
+                <div class="absolute bottom-0 left-0 h-1 bg-orange-500/50 progress-bar" style="width: 100%;"></div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>

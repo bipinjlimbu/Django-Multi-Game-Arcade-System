@@ -416,7 +416,7 @@ Ensure the default browser behavior of the `hidden` attribute.
   display: none;
 }
 
-.transform, .hover\:-translate-y-1, .active\:scale-90, .active\:scale-95, .group-hover\:-translate-x-1, .group-hover\:translate-x-1, .group-hover\:scale-110 {
+.translate-x-full, .transform, .hover\:-translate-y-1, .active\:scale-90, .active\:scale-95, .group-hover\:-translate-x-1, .group-hover\:translate-x-1, .group-hover\:scale-110 {
   --tw-translate-x: 0;
   --tw-translate-y: 0;
   --tw-rotate: 0;
@@ -427,7 +427,7 @@ Ensure the default browser behavior of the `hidden` attribute.
   --tw-transform: translateX(var(--tw-translate-x)) translateY(var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
-.border, .border-8, .border-2, .border-4, .border-t {
+.border, .border-8, .border-2, .border-4, .border-t, .border-l-4 {
   --tw-border-opacity: 1;
   border-color: rgb(229 231 235 / var(--tw-border-opacity));
 }
@@ -523,12 +523,28 @@ Ensure the default browser behavior of the `hidden` attribute.
   bottom: -2.5rem;
 }
 
+.top-5 {
+  top: 1.25rem;
+}
+
+.right-5 {
+  right: 1.25rem;
+}
+
+.bottom-0 {
+  bottom: 0px;
+}
+
 .z-\[9999\] {
   z-index: 9999;
 }
 
 .z-10 {
   z-index: 10;
+}
+
+.z-\[100\] {
+  z-index: 100;
 }
 
 .col-span-full {
@@ -816,6 +832,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   min-width: 700px;
 }
 
+.min-w-\[300px\] {
+  min-width: 300px;
+}
+
 .max-w-lg {
   max-width: 32rem;
 }
@@ -866,6 +886,11 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .border-collapse {
   border-collapse: collapse;
+}
+
+.translate-x-full {
+  --tw-translate-x: 100%;
+  transform: var(--tw-transform);
 }
 
 .transform {
@@ -1032,6 +1057,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   border-radius: 50px;
 }
 
+.rounded {
+  border-radius: 0.25rem;
+}
+
 .border {
   border-width: 1px;
 }
@@ -1050,6 +1079,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .border-t {
   border-top-width: 1px;
+}
+
+.border-l-4 {
+  border-left-width: 4px;
 }
 
 .border-dashed {
@@ -1105,6 +1138,16 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .border-white\/20 {
   border-color: rgb(255 255 255 / 0.2);
+}
+
+.border-orange-500 {
+  --tw-border-opacity: 1;
+  border-color: rgb(249 115 22 / var(--tw-border-opacity));
+}
+
+.border-red-500 {
+  --tw-border-opacity: 1;
+  border-color: rgb(239 68 68 / var(--tw-border-opacity));
 }
 
 .bg-blue-50 {
@@ -1242,6 +1285,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .bg-slate-900\/40 {
   background-color: rgb(15 23 42 / 0.4);
+}
+
+.bg-orange-500\/50 {
+  background-color: rgb(249 115 22 / 0.5);
 }
 
 .bg-gradient-to-t {
@@ -1673,6 +1720,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   opacity: 0.1;
 }
 
+.opacity-0 {
+  opacity: 0;
+}
+
 .shadow-2xl {
   --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
@@ -1772,6 +1823,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .duration-300 {
   transition-duration: 300ms;
+}
+
+.duration-500 {
+  transition-duration: 500ms;
 }
 
 .ease-out {
