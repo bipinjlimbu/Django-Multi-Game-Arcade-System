@@ -14,10 +14,13 @@ def leaderboard_selection_view(request):
 
 def leaderboard_view(request, game_slug):
     game = Game.objects.get(slug=game_slug)
-    if game.slug == 'number-guess' or game.slug == 'memory-game':
+    score_low = ['number-guess', 'memory-game']
+    score_high = ['reaction-game', 'math-challenge', 'arrow-defense', 'whack-a-mole', 'memory-flash-number', 'odd-one-out', 'rock-paper-scissors', 'pattern-memory', 'sequence-rush', 'sliding-puzzle', 'word-typing']
+    
+    if game.slug in score_low:
         players = Leaderboard.objects.filter(game=game).order_by('score')
         
-    elif game.slug == 'reaction-game' or game.slug == 'math-challenge' or game.slug == 'arrow-defense' or game.slug == 'whack-a-mole' or game.slug == 'memory-flash-number' or game.slug == 'odd-one-out' or game.slug == 'rock-paper-scissors' or game.slug == 'pattern-memory' or game.slug == 'sequence-rush' or game.slug == 'sliding-puzzle' or game.slug == 'word-typing':
+    elif game.slug in score_high:
         players = Leaderboard.objects.filter(game=game).order_by('-score')
         
     elif game.slug == 'quiz':
