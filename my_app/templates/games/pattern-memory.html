@@ -1,0 +1,211 @@
+<html>
+<head>
+    <title>Arcade | Pattern Memory 7x7</title>
+    {% load static %}
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <style>
+        :root { --neon-green: #22c55e; --neon-red: #ef4444; --bg-dark: #000; --gold: #FFD700; }
+        body { background-color: var(--bg-dark); margin: 0; overflow: hidden; font-family: 'Inter', sans-serif; color: white; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+        .top-ui { position: absolute; top: 20px; text-align: center; width: 100%; }
+        .game-title { color: var(--neon-green); font-size: 2rem; font-weight: 900; letter-spacing: 4px; margin: 0; text-transform: uppercase; }
+        
+        .stats-bar { display: flex; justify-content: center; gap: 30px; margin-top: 10px; }
+        .stat { font-weight: 800; font-size: 1.1rem; }
+
+        .grid-container {
+            display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: repeat(7, 1fr);
+            gap: 6px; width: 480px; height: 480px; margin-top: 60px;
+            background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid #1e293b;
+        }
+        .box {
+            background: #0f172a; border-radius: 4px; cursor: pointer; transition: 0.2s;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .box.active { background: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); }
+        .box.wrong { background: var(--neon-red); box-shadow: 0 0 15px var(--neon-red); }
+        .box.clicked { background: #166534; border-color: var(--neon-green); }
+        .box.used-permanently { background: #061e12; border-color: #14532d; cursor: default; opacity: 0.6; }
+
+        #status-msg { margin-top: 20px; font-weight: 700; font-size: 1.2rem; color: var(--gold); min-height: 1.5rem; text-transform: uppercase; }
+
+        #end-screen { 
+            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.98); 
+            z-index: 1000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+        }
+        .btn-group { display: flex; flex-direction: column; gap: 15px; width: 250px; margin-top: 20px; }
+        .btn-game { padding: 15px; border-radius: 12px; font-weight: 900; cursor: pointer; text-decoration: none; text-align: center; border: none; text-transform: uppercase; }
+        .btn-primary { background: var(--neon-green); color: #000; }
+        .btn-outline { background: transparent; color: white; border: 2px solid #334155; }
+    </style>
+</head>
+<body>
+
+    <div class="top-ui">
+        <h1 class="game-title">PATTERN 7x7</h1>
+        <div class="stats-bar">
+            <div class="stat">SCORE: <span id="score-val" style="color: var(--gold);">0</span></div>
+            <div class="stat">LEVEL: <span id="pattern-val" style="color: var(--neon-green);">1</span>/5</div>
+            <div class="stat">LIVES: <span id="lives-val">❤️❤️❤️</span></div>
+        </div>
+        <div id="status-msg">GET READY...</div>
+    </div>
+
+    <div class="grid-container" id="grid"></div>
+
+    <div id="end-screen">
+        <h2 id="final-msg" style="font-size: 4rem; font-weight: 900; margin-bottom: 0;">GAME OVER</h2>
+        <p style="font-size: 1.5rem; color: #94a3b8; margin-bottom: 10px;">Final Score: <span id="final-pts" style="color:white; font-weight: 900;">0</span></p>
+        <p id="match-outcome" style="color: #64748b; font-weight: 600; margin-bottom: 20px;"></p>
+        
+        <div class="btn-group">
+            <button onclick="location.reload()" class="btn-game btn-primary">REMATCH</button>
+            <a href="/leaderboard/pattern-memory/" class="btn-game btn-outline">LEADERBOARD</a>
+            <a href="/games/" class="btn-game btn-outline">QUIT</a>
+        </div>
+    </div>
+
+    <script>
+        let score = 0, lives = 3, currentPatternIndex = 1;
+        let targetPattern = [], userClicks = [];
+        let usedBoxesGlobal = []; 
+        let isWatching = true;
+        const totalPatterns = 5;
+        const gridEl = document.getElementById('grid');
+
+        function initGrid() {
+            gridEl.innerHTML = '';
+            for (let i = 0; i < 49; i++) {
+                const box = document.createElement('div');
+                box.classList.add('box');
+                box.id = `box-${i}`;
+                box.onclick = () => handleBoxClick(i);
+                gridEl.appendChild(box);
+            }
+            startLevel();
+        }
+
+        function startLevel() {
+            if (currentPatternIndex > totalPatterns) {
+                endGame(true);
+                return;
+            }
+
+            // Mark completed pattern boxes as permanently used
+            userClicks.forEach(idx => {
+                if(!usedBoxesGlobal.includes(idx)) usedBoxesGlobal.push(idx);
+                const b = document.getElementById(`box-${idx}`);
+                b.classList.add('used-permanently');
+                b.classList.remove('clicked');
+            });
+
+            isWatching = true;
+            userClicks = [];
+            targetPattern = [];
+            document.getElementById('pattern-val').innerText = currentPatternIndex;
+            document.getElementById('status-msg').innerText = "WATCH...";
+
+            // Filter out used boxes
+            let available = Array.from({length: 49}, (_, i) => i).filter(i => !usedBoxesGlobal.includes(i));
+            
+            // Level 1=4 boxes, Level 5=8 boxes
+            let patternLength = 3 + currentPatternIndex; 
+
+            for(let i = 0; i < patternLength; i++) {
+                if(available.length === 0) break;
+                let randIdx = Math.floor(Math.random() * available.length);
+                targetPattern.push(available.splice(randIdx, 1)[0]);
+            }
+
+            showSequence();
+        }
+
+        function showSequence() {
+            const boxes = document.querySelectorAll('.box');
+            boxes.forEach(b => b.classList.remove('active', 'wrong'));
+
+            targetPattern.forEach(idx => {
+                document.getElementById(`box-${idx}`).classList.add('active');
+            });
+
+            setTimeout(() => {
+                targetPattern.forEach(idx => {
+                    document.getElementById(`box-${idx}`).classList.remove('active');
+                });
+                isWatching = false;
+                document.getElementById('status-msg').innerText = "YOUR TURN!";
+            }, 3000);
+        }
+
+        function handleBoxClick(index) {
+            if (isWatching || lives <= 0 || usedBoxesGlobal.includes(index)) return;
+
+            const box = document.getElementById(`box-${index}`);
+            
+            if (targetPattern.includes(index)) {
+                if (!userClicks.includes(index)) {
+                    userClicks.push(index);
+                    box.classList.add('clicked');
+                    score += 10;
+                    updateUI();
+
+                    if (userClicks.length === targetPattern.length) {
+                        score += 100;
+                        updateUI();
+                        document.getElementById('status-msg').innerText = "LEVEL UP! +100";
+                        currentPatternIndex++;
+                        setTimeout(startLevel, 1200);
+                    }
+                }
+            } else {
+                lives--;
+                score = Math.max(0, score - 50);
+                updateUI();
+                box.classList.add('wrong');
+                document.getElementById('status-msg').innerText = "WRONG! (-50)";
+                
+                if (lives <= 0) {
+                    setTimeout(() => endGame(false), 500);
+                } else {
+                    isWatching = true;
+                    setTimeout(() => {
+                        box.classList.remove('wrong');
+                        showSequence();
+                    }, 1000);
+                }
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('score-val').innerText = score;
+            document.getElementById('lives-val').innerText = "❤️".repeat(lives);
+        }
+
+        function endGame(isWin) {
+            const msg = document.getElementById('final-msg');
+            const outcome = document.getElementById('match-outcome');
+            
+            if(isWin) {
+                msg.innerText = "ALL CLEAR";
+                msg.style.color = "var(--neon-green)";
+                outcome.innerText = "You mastered the grid!";
+            } else {
+                msg.innerText = "FAILED";
+                msg.style.color = "var(--neon-red)";
+                outcome.innerText = "Memory limit reached.";
+            }
+
+            document.getElementById('final-pts').innerText = score;
+            document.getElementById('end-screen').style.display = 'flex';
+            
+            fetch('/save-score/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify({ score: score, slug: 'pattern-memory' })
+            });
+        }
+
+        initGrid();
+    </script>
+</body>
+</html>
