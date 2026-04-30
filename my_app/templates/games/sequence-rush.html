@@ -1,0 +1,196 @@
+<html>
+<head>
+    <title>Sequence Rush | Arcade</title>
+    {% load static %}
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #020617;
+            background-image: radial-gradient(circle at center, #1e1b4b 0%, #020617 100%);
+            margin: 0; overflow: hidden; font-family: sans-serif; color: white;
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        #end-screen {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px);
+            z-index: 100; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.5s ease;
+        }
+        #end-screen.active { display: flex; opacity: 1; }
+
+        .btn-game { width: 220px; padding: 12px; margin: 8px; border-radius: 8px; font-weight: 800; text-transform: uppercase; cursor: pointer; text-decoration: none; text-align: center; }
+        .btn-primary { background: #a855f7; color: white; border: none; }
+        .btn-outline { background: transparent; color: white; border: 2px solid #334155; }
+
+        .answer-input { background: rgba(255, 255, 255, 0.05); border: 2px solid #334155; outline: none; transition: all 0.2s; }
+        .answer-input:focus { border-color: #a855f7; background: rgba(255, 255, 255, 0.1); }
+
+        .num-display { display: flex; gap: 10px; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap; }
+        .num-box { 
+            width: 70px; height: 70px; background: rgba(255,255,255,0.05); 
+            border: 2px solid #1e293b; display: flex; align-items: center; 
+            justify-content: center; font-size: 1.8rem; font-weight: 900; border-radius: 12px;
+        }
+        .missing { border-color: #a855f7; color: #a855f7; background: rgba(168, 85, 247, 0.1); }
+
+        .shake { animation: shake 0.4s both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div class="text-center mb-6">
+        <div class="font-black uppercase tracking-[0.2em] text-purple-500 mb-2 text-xl italic">Hard Mode</div>
+        <h1 class="text-5xl font-black italic uppercase text-white tracking-tighter">Sequence <span class="text-purple-500">Rush</span></h1>
+        
+        <div class="flex justify-center gap-6 mt-6">
+            <div class="bg-slate-800/50 px-6 py-2 rounded-xl border border-slate-700">
+                <span class="text-slate-400 text-[10px] font-bold uppercase block">Time Left</span>
+                <span id="timer" class="text-2xl font-mono font-black text-red-500">120s</span>
+            </div>
+            <div class="bg-slate-800/50 px-6 py-2 rounded-xl border border-slate-700">
+                <span class="text-slate-400 text-[10px] font-bold uppercase block">Total Score</span>
+                <span id="score-display" class="text-2xl font-mono font-black text-green-500">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-card" class="bg-slate-900/50 p-10 rounded-3xl border border-slate-800 shadow-2xl text-center max-w-xl w-full backdrop-blur-sm">
+        <div id="sequence-container" class="num-display"></div>
+        
+        <input type="number" id="answer" class="answer-input w-full text-5xl p-5 rounded-2xl text-center font-black text-white" placeholder="?" autofocus autocomplete="off">
+        
+        <div class="mt-6 text-[10px] uppercase font-bold tracking-widest text-slate-500">
+            Find the pattern | <span class="text-white">+50 Points</span>
+        </div>
+    </div>
+
+    <div id="end-screen">
+        <h2 class="text-7xl font-black italic text-purple-500 mb-2">FINISHED!</h2>
+        <p class="text-slate-400 mb-10 font-mono text-2xl">Final Score: <span id="final-score-display" class="text-white">0</span></p>
+        <button onclick="location.reload()" class="btn-game btn-primary">Try Again</button>
+        <a href="/leaderboard/sequence-rush/" class="btn-game btn-outline">Leaderboard</a>
+        <a href="/games/" class="btn-game btn-outline">Quit</a>
+    </div>
+
+    <script src="{% static 'js/lucide.min.js' %}"></script>
+    <script>
+        lucide.createIcons();
+
+        const sequenceEl = document.getElementById('sequence-container');
+        const answerInput = document.getElementById('answer');
+        const scoreEl = document.getElementById('score-display');
+        const timerEl = document.getElementById('timer');
+        const endScreen = document.getElementById('end-screen');
+        const finalScoreSpan = document.getElementById('final-score-display');
+
+        let score = 0, timeLeft = 120, currentAnswer = 0, gameActive = true;
+
+        const countdown = setInterval(() => {
+            if(!gameActive) return;
+            timeLeft--;
+            timerEl.innerText = timeLeft + 's';
+            if(timeLeft <= 0) endGame();
+        }, 1000);
+
+        function generateSequence() {
+            const patternType = Math.floor(Math.random() * 5);
+            let seq = [];
+            
+            switch(patternType) {
+                case 0: // Squares
+                    let base = Math.floor(Math.random() * 10) + 1;
+                    for(let i=0; i<4; i++) seq.push(Math.pow(base + i, 2));
+                    currentAnswer = Math.pow(base + 4, 2);
+                    break;
+                
+                case 1: // Fibonacci-ish
+                    let a = Math.floor(Math.random() * 5) + 1;
+                    let b = Math.floor(Math.random() * 5) + 2;
+                    seq = [a, b];
+                    for(let i=2; i<4; i++) seq.push(seq[i-1] + seq[i-2]);
+                    currentAnswer = seq[seq.length-1] + seq[seq.length-2];
+                    break;
+
+                case 2: // Multiplication + Offset
+                    let start2 = Math.floor(Math.random() * 5) + 1;
+                    let mult = 2;
+                    let offset = Math.floor(Math.random() * 3) + 1;
+                    seq.push(start2);
+                    for(let i=1; i<4; i++) seq.push(seq[i-1] * mult + offset);
+                    currentAnswer = seq[3] * mult + offset;
+                    break;
+
+                case 3: // Prime Numbers
+                    const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
+                    let idx = Math.floor(Math.random() * (primes.length - 5));
+                    seq = primes.slice(idx, idx + 4);
+                    currentAnswer = primes[idx + 4];
+                    break;
+
+                case 4: // Two-step alternating
+                    let start4 = Math.floor(Math.random() * 10) + 5;
+                    let steps = [Math.floor(Math.random() * 5) + 2, Math.floor(Math.random() * 3) + 1];
+                    seq.push(start4);
+                    for(let i=1; i<4; i++) {
+                        seq.push(i % 2 !== 0 ? seq[i-1] + steps[0] : seq[i-1] - steps[1]);
+                    }
+                    currentAnswer = 4 % 2 !== 0 ? seq[3] + steps[0] : seq[3] - steps[1];
+                    break;
+            }
+            renderSequence(seq);
+        }
+
+        function renderSequence(seq) {
+            sequenceEl.innerHTML = '';
+            seq.forEach(num => {
+                sequenceEl.innerHTML += `<div class="num-box text-white">${num}</div>`;
+            });
+            sequenceEl.innerHTML += `<div class="num-box missing">?</div>`;
+        }
+
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && gameActive) {
+                const userAns = parseInt(answerInput.value);
+                if (userAns === currentAnswer) {
+                    score += 50; 
+                    scoreEl.innerText = score;
+                    answerInput.value = '';
+                    generateSequence();
+                } else {
+                    answerInput.classList.add('shake');
+                    setTimeout(() => answerInput.classList.remove('shake'), 400);
+                    answerInput.value = '';
+                }
+            }
+        });
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(countdown);
+            answerInput.blur();
+            finalScoreSpan.innerText = score;
+            
+            fetch('/save-score/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify({ slug: 'sequence-rush', score: score })
+            }).then(() => {
+                endScreen.classList.add('active');
+            });
+        }
+
+        generateSequence();
+    </script>
+</body>
+</html>
