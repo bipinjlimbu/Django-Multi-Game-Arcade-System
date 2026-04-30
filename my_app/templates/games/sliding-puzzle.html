@@ -1,0 +1,181 @@
+<html>
+<head>
+    <title>Sliding Puzzle | Arcade</title>
+    {% load static %}
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #020617;
+            background-image: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+            margin: 0; overflow: hidden; font-family: sans-serif; color: white;
+        }
+
+        /* Puzzle Board */
+        .puzzle-board {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 12px; width: 340px; margin: 0 auto;
+        }
+        .tile {
+            width: 100px; height: 100px; background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #334155; display: flex; align-items: center;
+            justify-content: center; font-size: 2.5rem; font-weight: 900;
+            border-radius: 16px; cursor: pointer; color: #f59e0b;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tile:hover { border-color: #f59e0b; background: rgba(245, 158, 11, 0.1); transform: scale(1.02); }
+        .tile.empty { opacity: 0; cursor: default; pointer-events: none; }
+
+        /* End Screen Style */
+        #end-screen {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px);
+            z-index: 100; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.5s ease;
+        }
+        #end-screen.active { display: flex; opacity: 1; }
+
+        .btn-game { width: 220px; padding: 12px; margin: 8px; border-radius: 8px; font-weight: 800; text-transform: uppercase; cursor: pointer; text-decoration: none; text-align: center; border: none; }
+        .btn-primary { background: #f59e0b; color: white; }
+        .btn-outline { background: transparent; color: white; border: 2px solid #334155; }
+
+        .bonus-text { color: #facc15; animation: fadeUp 1s ease-out forwards; position: absolute; font-weight: bold; font-size: 1.2rem; }
+        @keyframes fadeUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div class="text-center mb-6">
+        <div class="font-black uppercase tracking-[0.2em] text-orange-400 mb-2 text-xl">Speed Mode</div>
+        <h1 class="text-5xl font-black italic uppercase text-white tracking-tighter">Sliding <span class="text-orange-500">Puzzle</span></h1>
+        
+        <div class="flex justify-center gap-6 mt-6">
+            <div class="bg-slate-800/50 px-6 py-2 rounded-xl border border-slate-700">
+                <span class="text-slate-400 text-[10px] font-bold uppercase block">Time Left</span>
+                <span id="timer" class="text-2xl font-mono font-black text-red-500">120s</span>
+            </div>
+            <div class="bg-slate-800/50 px-6 py-2 rounded-xl border border-slate-700 relative">
+                <span class="text-slate-400 text-[10px] font-bold uppercase block">Total Score</span>
+                <span id="score-display" class="text-2xl font-mono font-black text-green-500">0</span>
+                <div id="score-float-container" class="absolute top-0 left-0 w-full flex justify-center"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-card" class="bg-slate-900/50 p-8 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-sm">
+        <div id="puzzle-board" class="puzzle-board"></div>
+        <div class="mt-6 text-center text-[10px] uppercase font-bold tracking-widest text-slate-500">
+            Bonus: <span class="text-white">Remaining Time + 100 Points</span>
+        </div>
+    </div>
+
+    <div id="end-screen">
+        <h2 class="text-7xl font-black italic text-orange-500 mb-2">FINISHED!</h2>
+        <p class="text-slate-400 mb-10 font-mono text-2xl">Final Score: <span id="final-score-display" class="text-white">0</span></p>
+        <button onclick="location.reload()" class="btn-game btn-primary">Try Again</button>
+        <a href="/leaderboard/sliding-puzzle/" class="btn-game btn-outline">Leaderboard</a>
+        <a href="/games/" class="btn-game btn-outline">Go Back</a>
+    </div>
+
+    <script src="{% static 'js/lucide.min.js' %}"></script>
+    <script>
+        lucide.createIcons();
+
+        const boardEl = document.getElementById('puzzle-board');
+        const scoreEl = document.getElementById('score-display');
+        const timerEl = document.getElementById('timer');
+        const endScreen = document.getElementById('end-screen');
+
+        let tiles = [1, 2, 3, 4, 5, 6, 7, 8, null];
+        let score = 0, timeLeft = 120, gameActive = true;
+        let puzzleStartTime = Date.now();
+
+        function isSolvable(arr) {
+            let inv = 0;
+            let flat = arr.filter(n => n !== null);
+            for(let i=0; i<flat.length; i++)
+                for(let j=i+1; j<flat.length; j++)
+                    if(flat[i] > flat[j]) inv++;
+            return inv % 2 === 0;
+        }
+
+        function shuffle() {
+            puzzleStartTime = Date.now(); // Reset solve timer for bonus
+            do {
+                tiles.sort(() => Math.random() - 0.5);
+            } while (!isSolvable(tiles) || tiles.every((v, i) => v === (i < 8 ? i + 1 : null)));
+            renderBoard();
+        }
+
+        function renderBoard() {
+            boardEl.innerHTML = '';
+            tiles.forEach((tile, i) => {
+                const div = document.createElement('div');
+                div.className = `tile ${tile === null ? 'empty' : ''}`;
+                div.innerText = tile || '';
+                div.onclick = () => moveTile(i);
+                boardEl.appendChild(div);
+            });
+        }
+
+        function moveTile(i) {
+            if (!gameActive) return;
+            const emptyIdx = tiles.indexOf(null);
+            const adjacent = [i-1, i+1, i-3, i+3];
+            const sameRow = Math.floor(i/3) === Math.floor(emptyIdx/3);
+            const sameCol = (i%3) === (emptyIdx%3);
+
+            if (adjacent.includes(emptyIdx) && (sameRow || sameCol)) {
+                [tiles[i], tiles[emptyIdx]] = [tiles[emptyIdx], tiles[i]];
+                renderBoard();
+                
+                if (tiles.slice(0, 8).every((v, idx) => v === idx + 1)) {
+                    calculateScore();
+                    setTimeout(shuffle, 600);
+                }
+            }
+        }
+
+        function calculateScore() {
+            // Logic: (Total Time - Taken Time) + 100
+            const timeTaken = Math.floor((Date.now() - puzzleStartTime) / 1000);
+            const bonus = Math.max(0, 120 - timeTaken) + 100;
+            
+            score += bonus;
+            scoreEl.innerText = score;
+            showBonusPopup(bonus);
+        }
+
+        function showBonusPopup(amt) {
+            const float = document.createElement('div');
+            float.className = 'bonus-text';
+            float.innerText = `+${amt} Speed Bonus!`;
+            document.getElementById('score-float-container').appendChild(float);
+            setTimeout(() => float.remove(), 1000);
+        }
+
+        const gameTimer = setInterval(() => {
+            if (!gameActive) return;
+            timeLeft--;
+            timerEl.innerText = timeLeft + 's';
+            if (timeLeft <= 0) endGame();
+        }, 1000);
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+            document.getElementById('final-score-display').innerText = score;
+            
+            fetch('/save-score/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify({ slug: 'sliding-puzzle', score: score })
+            }).then(() => {
+                setTimeout(() => endScreen.classList.add('active'), 500);
+            });
+        }
+
+        shuffle();
+    </script>
+</body>
+</html>
