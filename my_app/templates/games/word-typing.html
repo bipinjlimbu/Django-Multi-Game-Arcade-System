@@ -1,0 +1,200 @@
+<html>
+<head>
+    <title>Word Typing | Arcade</title>
+    {% load static %}
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #000000;
+            margin: 0; overflow: hidden; font-family: sans-serif; color: white;
+        }
+
+        /* Typing Layout */
+        .typing-area { max-width: 850px; width: 100%; position: relative; }
+        #text-display {
+            font-size: 1.8rem; line-height: 1.6; font-weight: 500;
+            color: #1e293b; letter-spacing: 0.02em; text-align: left;
+            user-select: none;
+        }
+        
+        .char-correct { color: #f59e0b; text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+        .char-incorrect { color: #ef4444; background: rgba(239, 68, 68, 0.15); border-radius: 4px; }
+        .char-current { border-bottom: 4px solid #f59e0b; animation: blink 0.8s infinite; }
+        
+        @keyframes blink { 50% { border-color: transparent; } }
+        #hidden-input { position: absolute; opacity: 0; pointer-events: none; top: 0; }
+
+        /* --- BLACK MINIMALIST END SCREEN --- */
+        #end-screen {
+            display: none; position: fixed; inset: 0;
+            background: #000000;
+            z-index: 100; flex-direction: column; align-items: center; justify-content: center;
+        }
+        #end-screen.active { display: flex; animation: fadeIn 0.5s ease forwards; }
+
+        .btn-game { 
+            width: 260px; padding: 16px; margin: 8px; border-radius: 4px; 
+            font-weight: 800; text-transform: uppercase; cursor: pointer; 
+            text-decoration: none; text-align: center; border: none;
+        }
+        .btn-primary { background: #f59e0b; color: black; }
+        .btn-outline { background: transparent; color: #475569; border: 1px solid #1e293b; }
+        .btn-outline:hover { color: white; border-color: #f59e0b; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div class="text-center mb-12" id="game-header">
+        <h1 class="text-5xl font-black italic uppercase text-white tracking-tighter mb-8">Word <span class="text-orange-500">Typing</span></h1>
+        <div class="flex justify-center gap-12">
+            <div>
+                <span class="text-slate-600 text-[10px] font-bold uppercase block tracking-widest">Time Remaining</span>
+                <span id="timer" class="text-4xl font-mono font-black text-white">60s</span>
+            </div>
+            <div>
+                <span class="text-slate-600 text-[10px] font-bold uppercase block tracking-widest">WPM Speed</span>
+                <span id="wpm-display" class="text-4xl font-mono font-black text-orange-500">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="typing-area p-4">
+        <div id="text-display"></div>
+        <!-- Autofocus added here -->
+        <input type="text" id="hidden-input" autocomplete="off" spellcheck="false" autofocus>
+    </div>
+
+    <!-- Minimalist End Screen -->
+    <div id="end-screen">
+        <h2 class="text-8xl font-black italic tracking-tighter text-white mb-4">FINISHED</h2>
+        
+        <div class="flex gap-10 mb-16 mt-4">
+            <div class="text-center">
+                <div class="text-slate-600 text-xs font-bold uppercase tracking-widest mb-2">Accuracy</div>
+                <div id="final-acc" class="text-4xl font-light text-white">0%</div>
+            </div>
+            <div class="text-center">
+                <div class="text-slate-600 text-xs font-bold uppercase tracking-widest mb-2">Speed</div>
+                <div id="final-wpm" class="text-4xl font-light text-white">0</div>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center">
+            <button onclick="location.reload()" class="btn-game btn-primary">Try Again</button>
+            <a href="/leaderboard/word-typing/" class="btn-game btn-outline">Leaderboard</a>
+            <a href="/games/" class="btn-game btn-outline">Quit</a>
+        </div>
+    </div>
+
+    <script>
+        const paragraphs = [
+            "The quick brown fox jumps over the lazy dog. Hard work beats talent when talent doesn't work hard.",
+            "Programming is the art of algorithm design and data management. Efficiency is key to great software.",
+            "Success is the ability to go from one failure to another with no loss of enthusiasm."
+        ];
+        
+        let pIndex = 0, charIndex = 0, timeLeft = 60, errors = 0, totalTyped = 0, timerStarted = false;
+        const textDisplay = document.getElementById('text-display');
+        const inputField = document.getElementById('hidden-input');
+
+        // Force focus instantly and keep it there until game starts
+        function forceFocus() {
+            if (!timerStarted) inputField.focus();
+        }
+
+        window.onload = () => {
+            loadText();
+            inputField.focus();
+            // Interval to ensure focus even if user clicks elsewhere before starting
+            const focusEnsurer = setInterval(() => {
+                if (timerStarted) clearInterval(focusEnsurer);
+                inputField.focus();
+            }, 100);
+        };
+
+        function loadText() {
+            textDisplay.innerHTML = paragraphs[pIndex % paragraphs.length].split('').map(c => `<span>${c}</span>`).join('');
+            charIndex = 0;
+            updateCursor();
+        }
+
+        function updateCursor() {
+            const spans = textDisplay.querySelectorAll('span');
+            spans.forEach(s => s.classList.remove('char-current'));
+            if(spans[charIndex]) spans[charIndex].classList.add('char-current');
+        }
+
+        inputField.addEventListener('input', (e) => {
+            if(!timerStarted) { timerStarted = true; startTimer(); }
+            
+            const pText = paragraphs[pIndex % paragraphs.length];
+            const spans = textDisplay.querySelectorAll('span');
+            const typedVal = e.target.value;
+            const lastChar = typedVal[typedVal.length - 1];
+
+            if(e.inputType === 'deleteContentBackward' && charIndex > 0) {
+                charIndex--; 
+                spans[charIndex].className = ''; 
+                updateCursor(); 
+                return;
+            }
+
+            if(charIndex < pText.length) {
+                totalTyped++;
+                if(lastChar === pText[charIndex]) {
+                    spans[charIndex].classList.add('char-correct');
+                } else {
+                    spans[charIndex].classList.add('char-incorrect');
+                    errors++;
+                }
+                charIndex++;
+                updateCursor();
+
+                if(charIndex === pText.length && textDisplay.querySelectorAll('.char-incorrect').length === 0) {
+                    pIndex++; 
+                    loadText(); 
+                    e.target.value = '';
+                }
+            }
+            updateStats();
+        });
+
+        function startTimer() {
+            const interval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = timeLeft + 's';
+                if(timeLeft <= 0) { 
+                    clearInterval(interval); 
+                    endGame(); 
+                }
+            }, 1000);
+        }
+
+        function updateStats() {
+            const time = (60 - timeLeft) / 60 || 0.01;
+            const wpm = Math.round((totalTyped / 5) / time);
+            document.getElementById('wpm-display').innerText = wpm;
+        }
+
+        function endGame() {
+            const finalWpm = parseInt(document.getElementById('wpm-display').innerText);
+            const finalAcc = Math.round(((totalTyped - errors) / totalTyped) * 100) || 100;
+            const calculatedScore = (finalAcc * 100) + finalWpm;
+
+            document.getElementById('final-acc').innerText = finalAcc + '%';
+            document.getElementById('final-wpm').innerText = finalWpm;
+
+            fetch('/save-score/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify({ slug: 'word-typing', score: calculatedScore })
+            }).then(() => {
+                document.getElementById('end-screen').classList.add('active');
+            });
+        }
+    </script>
+</body>
+</html>

@@ -463,7 +463,7 @@ Ensure the default browser behavior of the `hidden` attribute.
   --tw-filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
-.backdrop-blur-sm, .backdrop-filter {
+.backdrop-blur-sm, .backdrop-blur-md, .backdrop-filter {
   --tw-backdrop-blur: var(--tw-empty,/*!*/ /*!*/);
   --tw-backdrop-brightness: var(--tw-empty,/*!*/ /*!*/);
   --tw-backdrop-contrast: var(--tw-empty,/*!*/ /*!*/);
@@ -517,6 +517,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .right-4 {
   right: 1rem;
+}
+
+.-bottom-10 {
+  bottom: -2.5rem;
 }
 
 .z-\[9999\] {
@@ -614,6 +618,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .mb-1 {
   margin-bottom: 0.25rem;
+}
+
+.mb-16 {
+  margin-bottom: 4rem;
 }
 
 .block {
@@ -880,6 +888,16 @@ Ensure the default browser behavior of the `hidden` attribute.
   animation: bounce 1s infinite;
 }
 
+@keyframes pulse {
+  50% {
+    opacity: .5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 .cursor-pointer {
   cursor: pointer;
 }
@@ -894,6 +912,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .grid-cols-3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .grid-rows-2 {
@@ -952,6 +974,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   gap: 2rem;
 }
 
+.gap-10 {
+  gap: 2.5rem;
+}
+
 .space-y-3 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
   margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
@@ -1000,6 +1026,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .rounded-\[40px\] {
   border-radius: 40px;
+}
+
+.rounded-\[50px\] {
+  border-radius: 50px;
 }
 
 .border {
@@ -1210,6 +1240,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: rgb(15 23 42 / 0.8);
 }
 
+.bg-slate-900\/40 {
+  background-color: rgb(15 23 42 / 0.4);
+}
+
 .bg-gradient-to-t {
   background-image: linear-gradient(to top, var(--tw-gradient-stops));
 }
@@ -1253,6 +1287,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .p-3 {
   padding: 0.75rem;
+}
+
+.p-12 {
+  padding: 3rem;
 }
 
 .px-6 {
@@ -1402,6 +1440,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   line-height: 1;
 }
 
+.text-\[11px\] {
+  font-size: 11px;
+}
+
 .font-black {
   font-weight: 900;
 }
@@ -1416,6 +1458,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .font-semibold {
   font-weight: 600;
+}
+
+.font-light {
+  font-weight: 300;
 }
 
 .uppercase {
@@ -1460,6 +1506,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .tracking-\[0\.3em\] {
   letter-spacing: 0.3em;
+}
+
+.tracking-\[0\.4em\] {
+  letter-spacing: 0.4em;
 }
 
 .text-slate-900 {
@@ -1684,6 +1734,11 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .backdrop-blur-sm {
   --tw-backdrop-blur: blur(4px);
+  backdrop-filter: var(--tw-backdrop-filter);
+}
+
+.backdrop-blur-md {
+  --tw-backdrop-blur: blur(12px);
   backdrop-filter: var(--tw-backdrop-filter);
 }
 
