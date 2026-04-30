@@ -34,14 +34,6 @@
 
 <body class="flex items-center justify-center min-h-screen p-4 font-sans text-slate-900">
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="fixed top-4 right-4 px-6 py-4 bg-blue-500 text-white rounded-lg shadow-lg">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-
     <div class="game-card w-full max-w-2xl rounded-[2.5rem] p-8 md:p-12 text-center relative overflow-hidden">
         
         <div class="flex justify-between items-center mb-8">
