@@ -38,17 +38,20 @@ def save_score(request):
                         leaderboard.save()
                         
             else:
+                score_low =['number-guess', 'memory-game']
+                score_high = ['reaction-game', 'math-challenge', 'arrow-defense', 'whack-a-mole', 'memory-flash-number', 'odd-one-out', 'rock-paper-scissors', 'pattern-memory', 'sequence-rush', 'sliding-puzzle', 'word-typing']
+                
                 if not Leaderboard.objects.filter(user = request.user, game=game).exists():
                     leaderboard = Leaderboard.objects.create(user=request.user, score=score, game=game)
                     leaderboard.save()
                     
                 else:
                     leaderboard = Leaderboard.objects.get(user=request.user, game=game)
-                    if (game.slug == 'number-guess' or game.slug == 'memory-game') and score < leaderboard.score:
+                    if game.slug in score_low and score < leaderboard.score:
                         leaderboard.score = score
                         leaderboard.save()
                         
-                    elif (game.slug == 'reaction-game' or game.slug == 'math-challenge' or game.slug == 'arrow-defense' or game.slug == 'whack-a-mole' or game.slug == 'memory-flash-number' or game.slug == 'odd-one-out' or game.slug == 'rock-paper-scissors' or game.slug == 'pattern-memory' or game.slug == 'sequence-rush' or game.slug == 'sliding-puzzle' or game.slug == 'word-typing') and score > leaderboard.score:
+                    elif game.slug in score_high and score > leaderboard.score:
                         leaderboard.score = score
                         leaderboard.save()
 
