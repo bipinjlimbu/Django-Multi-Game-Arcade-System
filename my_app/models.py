@@ -40,7 +40,6 @@ class Leaderboard(models.Model):
             return f"{self.score / 100:.2f}s"
         
         if self.game.slug == 'word-typing':
-            # return last two digit as wpm and rest as accuracy
             return f"{self.score // 100}%, {self.score % 100}"
         
         return str(self.score)
