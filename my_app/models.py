@@ -38,6 +38,11 @@ class Leaderboard(models.Model):
     def formatted_score(self):
         if self.game.slug == 'memory-game':
             return f"{self.score / 100:.2f}s"
+        
+        if self.game.slug == 'word-typing':
+            # return last two digit as wpm and rest as accuracy
+            return f"{self.score // 100}%, {self.score % 100}"
+        
         return str(self.score)
     
     def __str__(self):
