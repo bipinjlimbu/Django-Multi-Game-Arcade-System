@@ -416,7 +416,7 @@ Ensure the default browser behavior of the `hidden` attribute.
   display: none;
 }
 
-.translate-x-full, .transform, .hover\:-translate-y-1, .active\:scale-90, .active\:scale-95, .group-hover\:-translate-x-1, .group-hover\:translate-x-1, .group-hover\:scale-110 {
+.translate-x-full, .translate-x-\[120\%\], .transform, .hover\:-translate-y-1, .active\:scale-90, .active\:scale-95, .group-hover\:-translate-x-1, .group-hover\:translate-x-1, .group-hover\:scale-110 {
   --tw-translate-x: 0;
   --tw-translate-y: 0;
   --tw-rotate: 0;
@@ -474,6 +474,14 @@ Ensure the default browser behavior of the `hidden` attribute.
   --tw-backdrop-saturate: var(--tw-empty,/*!*/ /*!*/);
   --tw-backdrop-sepia: var(--tw-empty,/*!*/ /*!*/);
   --tw-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+}
+
+.pointer-events-none {
+  pointer-events: none;
+}
+
+.pointer-events-auto {
+  pointer-events: auto;
 }
 
 .invisible {
@@ -748,6 +756,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   height: 1.75rem;
 }
 
+.h-\[3px\] {
+  height: 3px;
+}
+
 .min-h-screen {
   min-height: 100vh;
 }
@@ -836,6 +848,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   min-width: 300px;
 }
 
+.min-w-\[320px\] {
+  min-width: 320px;
+}
+
 .max-w-lg {
   max-width: 32rem;
 }
@@ -890,6 +906,11 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .translate-x-full {
   --tw-translate-x: 100%;
+  transform: var(--tw-transform);
+}
+
+.translate-x-\[120\%\] {
+  --tw-translate-x: 120%;
   transform: var(--tw-transform);
 }
 
@@ -1291,6 +1312,16 @@ Ensure the default browser behavior of the `hidden` attribute.
   background-color: rgb(249 115 22 / 0.5);
 }
 
+.bg-orange-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(249 115 22 / var(--tw-bg-opacity));
+}
+
+.bg-blue-400 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(96 165 250 / var(--tw-bg-opacity));
+}
+
 .bg-gradient-to-t {
   background-image: linear-gradient(to top, var(--tw-gradient-stops));
 }
@@ -1557,6 +1588,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .tracking-\[0\.4em\] {
   letter-spacing: 0.4em;
+}
+
+.tracking-wide {
+  letter-spacing: 0.025em;
 }
 
 .text-slate-900 {
@@ -1835,6 +1870,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 
 .ease-in-out {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ease-\[cubic-bezier\(0\.18\2c 0\.89\2c 0\.32\2c 1\.28\)\] {
+  transition-timing-function: cubic-bezier(0.18,0.89,0.32,1.28);
 }
 
 .hover\:-translate-y-1:hover {
